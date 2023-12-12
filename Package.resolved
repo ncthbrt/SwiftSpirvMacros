@@ -1,0 +1,23 @@
+{
+  "pins" : [
+    {
+      "identity" : "spirv-headers-swift",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/ncthbrt/SPIRV-Headers-Swift.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "2025ea53a4149f7074acfe6cf4f6b22ef31a0cd0"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-syntax.git",
+      "state" : {
+        "revision" : "6ad4ea24b01559dde0773e3d091f1b9e36175036",
+        "version" : "509.0.2"
+      }
+    }
+  ],
+  "version" : 2
+}

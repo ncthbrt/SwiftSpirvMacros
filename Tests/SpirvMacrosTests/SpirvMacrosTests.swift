@@ -7,7 +7,7 @@ import XCTest
 import SpirvMacrosMacros
 
 let testMacros: [String: Macro.Type] = [
-    "stringify": StringifyMacro.self,
+    "document": SpirvDocumentMacro.self,
 ]
 #endif
 
@@ -16,7 +16,7 @@ final class SpirvMacrosTests: XCTestCase {
         #if canImport(SpirvMacrosMacros)
         assertMacroExpansion(
             """
-            #stringify(a + b)
+            #document({})
             """,
             expandedSource: """
             (a + b, "a + b")

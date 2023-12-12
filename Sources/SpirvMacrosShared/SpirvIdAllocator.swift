@@ -8,21 +8,21 @@
 import Foundation
 
 
-struct SpirvId {
-    let value: UInt32
-}
-
-class SpirvIdAllocator {
+public class SpirvIdAllocator {
     public var lastAllocation: UInt32 = 0
     
-    public func allocate() -> SpirvId {
+    public func allocate() -> UInt32 {
         lastAllocation += 1
-        return SpirvId(value: lastAllocation)
+        return lastAllocation
     }
     
     public func reset() {
         lastAllocation = 0
     }
     
-    public static var shared: SpirvIdAllocator = SpirvIdAllocator()
+    public static var instance: SpirvIdAllocator = SpirvIdAllocator()
+    
+    public init(){
+        lastAllocation = 0
+    }
 }

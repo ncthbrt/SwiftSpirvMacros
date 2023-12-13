@@ -20,14 +20,20 @@ public struct SpirvDocumentMacro: ExpressionMacro {
             HeaderlessSpirvDocument.instance = document
             
             let prevAllocator = SpirvIdAllocator.instance
-            var allocator = SpirvIdAllocator()
+            let allocator = SpirvIdAllocator()
             SpirvIdAllocator.instance = allocator
+
+            let prevTypeCache = SpirvTypeCache.instance
+            let typeCache = SpirvTypeCache()
+            SpirvTypeCache.instance = typeCache
 
             (\(argument)());
 
-            let bounds = SpirvIdAllocator.instance.lastAllocation + 1
             HeaderlessSpirvDocument.instance = prevDocument
             SpirvIdAllocator.instance = prevAllocator
+            SpirvTypeCache.instance = prevTypeCache
+            
+            let bounds = allocator.lastAllocation + 1
             return buildSpirv(document: document, bounds: bounds)
         }())
 """
@@ -45,7 +51,7 @@ public struct SpirvIdMacro: ExpressionMacro {
 }
 
 
-public struct SpirvStringMacro: ExpressionMacro {
+public struct SpirvStringLiteralMacro: ExpressionMacro {
     public static func expansion(
         of node: some FreestandingMacroExpansionSyntax,
         in context: some MacroExpansionContext
@@ -531,7 +537,7 @@ struct SpirvMacrosPlugin: CompilerPlugin {
     let providingMacros: [Macro.Type] = [
         SpirvDocumentMacro.self,
         SpirvIdMacro.self,
-        SpirvStringMacro.self,
+        SpirvStringLiteralMacro.self,
         SpirvCapabilityMacro.self,
         SpirvCapabilityResultMacro.self,
         SpirvExtensionMacro.self,

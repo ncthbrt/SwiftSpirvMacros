@@ -8,7 +8,7 @@ public macro document(_ value: () -> Void) -> [UInt32] = #externalMacro(module: 
 public macro id() -> UInt32 = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvIdMacro")
 
 @freestanding(expression)
-public macro string(_ value: String) -> [UInt32] = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvStringMacro")
+public macro stringLiteral(_ value: String) -> [UInt32] = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvStringLiteralMacro")
 
 
 @freestanding(expression)

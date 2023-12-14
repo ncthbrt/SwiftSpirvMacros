@@ -34,7 +34,6 @@ public macro extInstImport(opCode: SpvOp, _ operands: [UInt32]...) = #externalMa
 public macro extInstImportWithResult(opCode: SpvOp, _ operands: [UInt32]...) -> UInt32 = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvExtInstImportResultMacro")
 
 
-
 @freestanding(expression)
 public macro memoryModel(opCode: SpvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvMemoryModelMacro")
 
@@ -94,6 +93,12 @@ public macro annotationWithResult(opCode: SpvOp, _ operands: [UInt32]...) -> UIn
 public macro globalDeclaration(opCode: SpvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvGlobalDeclarationMacro")
 
 
+
+@freestanding(expression)
+public macro typeDeclaration(opCode: SpvOp, _ operands: [UInt32]...) -> UInt32 = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvTypeDeclarationMacro")
+
+
+
 @freestanding(expression)
 public macro globalDeclarationWithResult(opCode: SpvOp, _ operands: [UInt32]...) -> UInt32 = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvGlobalDeclarationResultMacro")
 
@@ -113,4 +118,8 @@ public macro functionDefinition(opCode: SpvOp, _ operands: [UInt32]...) = #exter
 
 @freestanding(expression)
 public macro functionDefinitionWithResult(opCode: SpvOp, _ operands: [UInt32]...) -> UInt32 = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvFunctionDefinitionResultMacro")
+
+
+@freestanding(expression)
+public macro strct(_ structDefinition: () -> Void) -> UInt32 = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvStructMacro")
 

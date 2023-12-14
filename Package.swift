@@ -60,6 +60,7 @@ let package = Package(
             dependencies: [
                 "SpirvMacrosMacros",
                 .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+                "SpirvMacrosShared"
             ]
         ),
     ],

@@ -3,6 +3,7 @@ import SwiftSyntax
 import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 import Foundation
+import SpirvMacrosShared
 
 public struct SpirvDocumentMacro: ExpressionMacro {
     public static func expansion(
@@ -49,7 +50,6 @@ public struct SpirvIdMacro: ExpressionMacro {
         return "SpirvIdAllocator.instance.allocate()"
     }
 }
-
 
 public struct SpirvStringLiteralMacro: ExpressionMacro {
     public static func expansion(
@@ -442,6 +442,28 @@ public struct SpirvGlobalDeclarationMacro: ExpressionMacro {
     }
 }
 
+
+public struct SpirvTypeDeclarationMacro: ExpressionMacro {
+    public static func expansion(
+        of node: some FreestandingMacroExpansionSyntax,
+        in context: some MacroExpansionContext
+    ) -> ExprSyntax {
+        let arguments = node.argumentList.map({return "\($0.expression)"})
+        return """
+({
+    let maybeResultId = SpirvTypeCache.instance.tryGetTypeId(op: \(raw: arguments.first!), operands: [\(raw: arguments.dropFirst().joined(separator: ", "))])
+    if let id = maybeResultId {
+        return id
+    }
+    let resultId = SpirvTypeCache.instance.allocateNewTypeId(op: \(raw: arguments.first!), operands: [\(raw: arguments.dropFirst().joined(separator: ", "))])
+    let instruction = Instruction(opCode: \(raw: arguments.first!), operands: [[resultId], \(raw: arguments.dropFirst().joined(separator: ", "))])
+    HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: instruction)
+    return resultId
+}())
+"""
+    }
+}
+
 public struct SpirvGlobalDeclarationResultMacro: ExpressionMacro {
     public static func expansion(
         of node: some FreestandingMacroExpansionSyntax,
@@ -526,10 +548,69 @@ public struct SpirvFunctionDefinitionResultMacro: ExpressionMacro {
     }
 }
 
-//
-//public mutating func addFunctionDefinitionInstruction(instruction: Instruction) {
-//    functionDefinitions.append(contentsOf: instruction.build())
-//}
+public struct SpirvStructMacro: ExpressionMacro {
+    public static func expansion(
+        of node: some FreestandingMacroExpansionSyntax,
+        in context: some MacroExpansionContext
+    ) -> ExprSyntax {
+        
+        guard let fst = node.argumentList.first else {
+            fatalError("SpirvStructMacro requires a closure containing a struct definition")
+        }
+        
+        guard let closureExpr = fst.expression.as(ClosureExprSyntax.self) else {
+            fatalError("SpirvStructMacro requires a closure containing a struct definition")
+        }
+        
+        let structDecls = closureExpr.statements
+            .filter({$0.is(CodeBlockItemSyntax.self)})
+            .map({$0.item})
+            .map({$0.as(StructDeclSyntax.self)})
+            .filter({$0 != nil})
+            .map({$0!})
+            
+        if structDecls.count != 1 {
+            fatalError("SpirvStructMacro requires a closure containing a single struct definition")
+        }
+        
+        let structDecl = structDecls.first!
+        let structName = string(structDecl.name.text)
+        
+        let members = structDecl.memberBlock.members
+            .map({$0.decl.as(VariableDeclSyntax.self)})
+            .filter({$0 != nil})
+            .map({$0!})
+        let patternBindings = members
+            .map({$0.bindings.first?.as(PatternBindingSyntax.self)})
+            .filter({$0 != nil})
+        
+        let memberBindingNames =
+            patternBindings
+                .map({$0!.pattern.as(IdentifierPatternSyntax.self)})
+                .map({$0?.identifier.text})
+        let memberBindingTypes =
+            patternBindings
+            .map({$0!.typeAnnotation?.type.as(IdentifierTypeSyntax.self)?.name})
+            .filter({$0 != nil})
+        let memberBindingSpecifierTypes = members.map({$0.bindingSpecifier.tokenKind == .keyword(.var) ? Keyword.var : Keyword.let})
+        
+        if memberBindingNames.count != memberBindingTypes.count || memberBindingSpecifierTypes.count != memberBindingNames.count {
+            fatalError("Unexpected struct layout")
+        }
+        
+        return """
+({
+    return 0
+}())
+"""
+    }
+}
+
+
+
+
+
+
 
 
 @main
@@ -560,9 +641,11 @@ struct SpirvMacrosPlugin: CompilerPlugin {
         SpirvAnnotationResultMacro.self,
         SpirvGlobalDeclarationMacro.self,
         SpirvGlobalDeclarationResultMacro.self,
+        SpirvTypeDeclarationMacro.self,
         SpirvFunctionDeclarationMacro.self,
         SpirvFunctionDeclarationResultMacro.self,
         SpirvFunctionDefinitionMacro.self,
-        SpirvFunctionDefinitionResultMacro.self
+        SpirvFunctionDefinitionResultMacro.self,
+        SpirvStructMacro.self
     ]
 }

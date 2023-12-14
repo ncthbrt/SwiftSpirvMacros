@@ -526,7 +526,6 @@ public struct SpirvFunctionDefinitionMacro: ExpressionMacro {
         return """
 ({
     let instruction = Instruction(opCode: \(raw: arguments.first!), operands: [\(raw: arguments.dropFirst().joined(separator: ", "))])
-    print(instruction)
     HeaderlessSpirvDocument.instance.addFunctionDefinitionInstruction(instruction: instruction)
 }())
 """
@@ -754,21 +753,7 @@ let structTypeId_\(i) = \(floatMatrixDeclaration(rows: 4, columns: 4));
             default:
                 fatalError("\(memberBindingTypes[i]?.text ?? "Unknown") is not a supportedType")
             }
-        }
-//            typeLines.append("""
-// let maybeResultId = SpirvTypeCache.instance.tryGetTypeId(op: \(raw: arguments.first!), operands: [\(raw: arguments.dropFirst().joined(separator: ", "))])
-// if let id = maybeResultId {
-//     return id
-// }
-// let resultId = SpirvTypeCache.instance.allocateNewTypeId(op: \(raw: arguments.first!), operands: [\(raw: arguments.dropFirst().joined(separator: ", "))])
-// let instruction = Instruction(opCode: \(raw: arguments.first!), operands: [[resultId], \(raw: arguments.dropFirst().joined(separator: ", "))])
-// HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: instruction)
-//
-//            """)
-//            layoutLines.append("")
-//        }
-        
-        
+        }        
         return """
 ({
     if let structId = SpirvTypeCache.instance.tryGetTypeId(structName: "\(raw: structName)") {

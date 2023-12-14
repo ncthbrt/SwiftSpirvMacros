@@ -4,6 +4,7 @@ import SwiftSyntaxBuilder
 import SwiftSyntaxMacros
 import Foundation
 import SpirvMacrosShared
+import simd
 
 public struct SpirvDocumentMacro: ExpressionMacro {
     public static func expansion(
@@ -525,6 +526,7 @@ public struct SpirvFunctionDefinitionMacro: ExpressionMacro {
         return """
 ({
     let instruction = Instruction(opCode: \(raw: arguments.first!), operands: [\(raw: arguments.dropFirst().joined(separator: ", "))])
+    print(instruction)
     HeaderlessSpirvDocument.instance.addFunctionDefinitionInstruction(instruction: instruction)
 }())
 """
@@ -547,6 +549,60 @@ public struct SpirvFunctionDefinitionResultMacro: ExpressionMacro {
 """
     }
 }
+
+func typeDeclaration(op: String, operands: [[UInt32]]) -> String {
+    let operandsStr = operands.map({$0.map({op in "[\(op)]"}).joined(separator: ", ")}).joined(separator: ", ")
+    return """
+    ({
+            let maybeResultId = SpirvTypeCache.instance.tryGetTypeId(op: \(op), operands: [\(operandsStr)])
+            if let id = maybeResultId {
+                return id
+            }
+            let resultId = SpirvTypeCache.instance.allocateNewTypeId(op: \(op), operands: [\(operandsStr)])
+            let instruction = Instruction(opCode: \(op), operands: [[resultId], \(operandsStr)])
+            HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: instruction)
+            return resultId
+    }())
+    """
+}
+
+let int32Declaration = typeDeclaration(op: "SpvOpTypeInt", operands: [[32], [1]])
+let uInt32Declaration = typeDeclaration(op: "SpvOpTypeInt", operands: [[32], [0]])
+let floatDeclaration = typeDeclaration(op: "SpvOpTypeFloat", operands: [[32]])
+
+func vectorFloatDeclaration(componentCount: UInt32) -> String {
+    """
+({
+    let floatTypeId = \(floatDeclaration);
+    let maybeResultId = SpirvTypeCache.instance.tryGetTypeId(op: SpvOpTypeVector, operands: [[floatTypeId], [\(componentCount)]])
+    if let id = maybeResultId {
+        return id
+    }
+    let resultId = SpirvTypeCache.instance.allocateNewTypeId(op: SpvOpTypeVector, operands: [[floatTypeId], [\(componentCount)]])
+    let instruction = Instruction(opCode: SpvOpTypeVector, operands: [[resultId], [floatTypeId], [\(componentCount)]])
+    HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: instruction)
+    return resultId
+}())
+"""
+}
+
+
+func floatMatrixDeclaration(rows: UInt32, columns: UInt32) -> String {
+    """
+({
+    let vectorTypeId = \(vectorFloatDeclaration(componentCount: rows));
+    let maybeResultId = SpirvTypeCache.instance.tryGetTypeId(op: SpvOpTypeMatrix, operands: [[vectorTypeId, \(columns)]])
+    if let id = maybeResultId {
+        return id
+    }
+    let resultId = SpirvTypeCache.instance.allocateNewTypeId(op: SpvOpTypeMatrix, operands: [[vectorTypeId, \(columns)]])
+    let instruction = Instruction(opCode: SpvOpTypeMatrix, operands: [[resultId, vectorTypeId, \(columns)]])
+    HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: instruction)
+    return resultId
+}())
+"""
+}
+
 
 public struct SpirvStructMacro: ExpressionMacro {
     public static func expansion(
@@ -574,7 +630,8 @@ public struct SpirvStructMacro: ExpressionMacro {
         }
         
         let structDecl = structDecls.first!
-        let structName = string(structDecl.name.text)
+        let structName = structDecl.name.text
+        let structNameBytes = string(structName)
         
         let members = structDecl.memberBlock.members
             .map({$0.decl.as(VariableDeclSyntax.self)})
@@ -598,9 +655,132 @@ public struct SpirvStructMacro: ExpressionMacro {
             fatalError("Unexpected struct layout")
         }
         
+        var typeLines: [String] = []
+        var layoutLines: [String] = []
+        var structOperands: [String] = []
+        
+        for i in 0..<memberBindingNames.count {
+            layoutLines.append("""
+HeaderlessSpirvDocument.instance.addDebugNamesInstruction(instruction: Instruction(opCode: SpvOpMemberName, operands: [[newStructId, \(i)], [\(string(memberBindingNames[i]!).map({"\($0)"}).joined(separator: ", "))]]))
+""")
+            structOperands.append("structTypeId_\(i)")
+            
+            switch (memberBindingTypes[i]?.text){
+            case "Int", "Int32":
+                typeLines.append("""
+let structTypeId_\(i) = \(int32Declaration);
+""")
+                break
+            case "UInt32":
+                typeLines.append("""
+let structTypeId_\(i) = \(uInt32Declaration);
+""")
+                break
+            case "Float":
+                typeLines.append("""
+let structTypeId_\(i) = \(floatDeclaration);
+""")
+                break
+            case "vector_float2":
+                typeLines.append("""
+let structTypeId_\(i) = \(vectorFloatDeclaration(componentCount: 2));
+""")
+                break
+            case "vector_float3":
+                typeLines.append("""
+let structTypeId_\(i) = \(vectorFloatDeclaration(componentCount: 3));
+""")
+                break
+            case "vector_float4":
+                typeLines.append("""
+let structTypeId_\(i) = \(vectorFloatDeclaration(componentCount: 4));
+""")
+
+            case "vector_float8":
+                typeLines.append("""
+let structTypeId_\(i) = \(vectorFloatDeclaration(componentCount: 8));
+""")
+                break
+
+            case "matrix_float2x2":
+                typeLines.append("""
+let structTypeId_\(i) = \(floatMatrixDeclaration(rows: 2, columns: 2));
+""")
+                break
+
+            case "matrix_float2x4":
+                typeLines.append("""
+let structTypeId_\(i) = \(floatMatrixDeclaration(rows: 2, columns: 4));
+""")
+                break
+                
+            case "matrix_float2x3":
+                typeLines.append("""
+let structTypeId_\(i) = \(floatMatrixDeclaration(rows: 2, columns: 3));
+""")
+                break
+            case "matrix_float3x2":
+                typeLines.append("""
+let structTypeId_\(i) = \(floatMatrixDeclaration(rows: 3, columns: 2));
+""")
+                break
+            case "matrix_float3x3":
+                typeLines.append("""
+let structTypeId_\(i) = \(floatMatrixDeclaration(rows: 3, columns: 3));
+""")
+                break
+                
+            case "matrix_float3x4":
+                typeLines.append("""
+let structTypeId_\(i) = \(floatMatrixDeclaration(rows: 3, columns: 4));
+""")
+                break
+            case "matrix_float4x2":
+                typeLines.append("""
+let structTypeId_\(i) = \(floatMatrixDeclaration(rows: 4, columns: 2));
+""")
+                break
+
+            case "matrix_float4x3":
+                typeLines.append("""
+let structTypeId_\(i) = \(floatMatrixDeclaration(rows: 4, columns: 3));
+""")
+                break
+            case "matrix_float4x4":
+                typeLines.append("""
+let structTypeId_\(i) = \(floatMatrixDeclaration(rows: 4, columns: 4));
+""")
+                break
+            default:
+                fatalError("\(memberBindingTypes[i]?.text ?? "Unknown") is not a supportedType")
+            }
+        }
+//            typeLines.append("""
+// let maybeResultId = SpirvTypeCache.instance.tryGetTypeId(op: \(raw: arguments.first!), operands: [\(raw: arguments.dropFirst().joined(separator: ", "))])
+// if let id = maybeResultId {
+//     return id
+// }
+// let resultId = SpirvTypeCache.instance.allocateNewTypeId(op: \(raw: arguments.first!), operands: [\(raw: arguments.dropFirst().joined(separator: ", "))])
+// let instruction = Instruction(opCode: \(raw: arguments.first!), operands: [[resultId], \(raw: arguments.dropFirst().joined(separator: ", "))])
+// HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: instruction)
+//
+//            """)
+//            layoutLines.append("")
+//        }
+        
+        
         return """
 ({
-    return 0
+    if let structId = SpirvTypeCache.instance.tryGetTypeId(structName: "\(raw: structName)") {
+        return structId
+    }
+    \(raw: typeLines.joined(separator: "\n"))
+    let newStructId = SpirvTypeCache.instance.allocateNewTypeId(structName: "\(raw: structName)")
+    let structInstruction = Instruction(opCode: SpvOpTypeStruct, operands: [[newStructId], [\(raw: structOperands.joined(separator: ", "))]])
+    HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: structInstruction)
+    HeaderlessSpirvDocument.instance.addDebugNamesInstruction(instruction: Instruction(opCode: SpvOpName, operands: [[newStructId], [\(raw: structNameBytes.map({"\($0)"}).joined(separator: ", "))]]))
+    \(raw: layoutLines.joined(separator: "\n"))
+    return newStructId
 }())
 """
     }

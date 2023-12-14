@@ -22,6 +22,7 @@ let package = Package(
         // Depend on the Swift 5.9 release of SwiftSyntax
         .package(url: "https://github.com/apple/swift-syntax.git", from: "509.0.0"),
         .package(url: "https://github.com/ncthbrt/SPIRV-Headers-Swift.git", branch: "main"),
+        .package(url: "https://github.com/stackotter/swift-macro-toolkit.git", revision: "106daeb38eb3f52b1540aed981fc63fa22274576")
     ],
     targets: [
         // Targets are the basic building blocks of a package, defining a module or a test suite.
@@ -37,7 +38,8 @@ let package = Package(
                 .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
                 .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
                 .product(name: "SPIRV-Headers-Swift", package: "SPIRV-Headers-Swift"),
-                .target(name: "SpirvMacrosShared")
+                .target(name: "SpirvMacrosShared"),
+                .product(name: "MacroToolkit", package: "swift-macro-toolkit")
             ]
         ),
 

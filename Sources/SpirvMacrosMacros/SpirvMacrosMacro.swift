@@ -836,7 +836,11 @@ return """
     }())
     \(name ?? "")
     \(raw: functionDefinition)
-    return funcId
+    return { \(raw: trailingClosureAttributes.count == 0 ? "": "\(trailingClosureAttributes.joined(separator: ", ")) in")
+        let result = SpirvIdAllocator.instance.allocate()
+        HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: Instruction(opCode: SpvOpFunctionCall, operands: [[\(resultTypeVariable), result], [\(raw: trailingClosureAttributes.joined(separator: ", "))]]))
+        return result
+    }
 }())
 """
     }

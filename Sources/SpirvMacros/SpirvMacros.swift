@@ -125,29 +125,28 @@ public macro SpirvStruct() = #externalMacro(module: "SpirvMacrosMacros", type: "
 
 
 @freestanding(expression)
-public macro fn(name: String? = nil, returnType: UInt32? = nil, _ funcDefinition: () -> Void) -> UInt32 = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvFuncMacro")
+public macro fn(name: String? = nil, returnType: UInt32? = nil, _ funcDefinition: () -> Void) -> (() -> UInt32) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvFuncMacro")
 
 @freestanding(expression)
-public macro fn(name: String? = nil, argType1: UInt32, returnType: UInt32? = nil, _ funcDefinition: (UInt32) -> Void) -> UInt32 = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvFuncMacro")
-
-
-@freestanding(expression)
-public macro fn(name: String? = nil, _ argType1: UInt32, _ argType2: UInt32, returnType: UInt32? = nil, _ funcDefinition: (UInt32, UInt32) -> Void) -> UInt32 = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvFuncMacro")
+public macro fn(name: String? = nil, argType1: UInt32, returnType: UInt32? = nil, _ funcDefinition: (UInt32) -> Void) -> ((UInt32) -> UInt32) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvFuncMacro")
 
 
 @freestanding(expression)
-public macro fn(name: String? = nil, _ argType1: UInt32, _ argType2: UInt32, argType3: UInt32, returnType: UInt32? = nil, _ funcDefinition: (UInt32, UInt32, UInt32) -> Void) -> UInt32 = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvFuncMacro")
+public macro fn(name: String? = nil, _ argType1: UInt32, _ argType2: UInt32, returnType: UInt32? = nil, _ funcDefinition: (UInt32, UInt32) -> Void) -> ((UInt32, UInt32) -> UInt32)  = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvFuncMacro")
 
 
 @freestanding(expression)
-public macro fn(name: String? = nil, _ argType1: UInt32, _ argType2: UInt32, argType3: UInt32, argType4: UInt32, returnType: UInt32? = nil, _ funcDefinition: (UInt32, UInt32, UInt32, UInt32) -> Void) -> UInt32 = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvFuncMacro")
+public macro fn(name: String? = nil, _ argType1: UInt32, _ argType2: UInt32, argType3: UInt32, returnType: UInt32? = nil, _ funcDefinition: (UInt32, UInt32, UInt32) -> Void) -> ((UInt32, UInt32, UInt32) -> UInt32) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvFuncMacro")
 
 
 @freestanding(expression)
-public macro fn(name: String? = nil, _ argType1: UInt32, _ argType2: UInt32, argType3: UInt32, argType4: UInt32, argType5: UInt32, returnType: UInt32? = nil, _ funcDefinition: (UInt32, UInt32, UInt32, UInt32, UInt32) -> Void) -> UInt32 = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvFuncMacro")
+public macro fn(name: String? = nil, _ argType1: UInt32, _ argType2: UInt32, argType3: UInt32, argType4: UInt32, returnType: UInt32? = nil, _ funcDefinition: (UInt32, UInt32, UInt32, UInt32) -> Void) -> ((UInt32, UInt32, UInt32, UInt32) -> UInt32) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvFuncMacro")
 
 
 @freestanding(expression)
-public macro fn(name: String? = nil, _ argType1: UInt32, _ argType2: UInt32, argType3: UInt32, argType4: UInt32, argType5: UInt32, argType6: UInt32, returnType: UInt32? = nil, _ funcDefinition: (UInt32, UInt32, UInt32, UInt32, UInt32, UInt32) -> Void) -> UInt32 = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvFuncMacro")
+public macro fn(name: String? = nil, _ argType1: UInt32, _ argType2: UInt32, argType3: UInt32, argType4: UInt32, argType5: UInt32, returnType: UInt32? = nil, _ funcDefinition: (UInt32, UInt32, UInt32, UInt32, UInt32) -> Void) -> ((UInt32, UInt32, UInt32, UInt32, UInt32) -> UInt32) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvFuncMacro")
 
+
+@freestanding(expression)
+public macro fn(name: String? = nil, _ argType1: UInt32, _ argType2: UInt32, argType3: UInt32, argType4: UInt32, argType5: UInt32, argType6: UInt32, returnType: UInt32? = nil, _ funcDefinition: (UInt32, UInt32, UInt32, UInt32, UInt32, UInt32) -> Void) -> ((UInt32, UInt32, UInt32, UInt32, UInt32, UInt32) -> UInt32) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvFuncMacro")
 

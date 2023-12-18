@@ -639,25 +639,41 @@ public struct SpirvStructMacro: ExtensionMacro {
         var typeLines: [String] = []
         var layoutLines: [String] = []
         var structOperands: [String] = []
-        
+        var writeConstantLines: [String] = []
+        var writeConstantOperands: [String] = []
         for i in 0..<memberBindingNames.count {
             layoutLines.append("""
 HeaderlessSpirvDocument.instance.addDebugNamesInstruction(instruction: Instruction(opCode: SpvOpMemberName, operands: [[newStructId, \(i)], [\(string(memberBindingNames[i]!).map({"\($0)"}).joined(separator: ", "))]]))
 """)
             structOperands.append("structTypeId_\(i)")
-            
+            writeConstantOperands.append("structConstantValue_\(i)")
             switch (memberBindingTypes[i]?.text){
             case "Int", "Int32":
                 typeLines.append("""
 let structTypeId_\(i) = \(int32Declaration);
+""")
+                writeConstantLines.append("""
+let structConstantValue_\(i) = #id
+HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: Instruction(opCode: SpvOpConstant, operands: [[structTypeId_\(i), structConstantValue_\(i)], int(self.\(memberBindingNames[i]!))]))
 """)
                 break
             case "UInt32":
                 typeLines.append("""
 let structTypeId_\(i) = \(uInt32Declaration);
 """)
+                
+                writeConstantLines.append("""
+let structConstantValue_\(i) = #id
+HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: Instruction(opCode: SpvOpConstant, operands: [[structTypeId_\(i), structConstantValue_\(i), self.\(memberBindingNames[i]!)]]))
+""")
+
                 break
             case "Float":
+                writeConstantLines.append("""
+let structConstantValue_\(i) = #id
+HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: Instruction(opCode: SpvOpConstant, operands: [[structTypeId_\(i), structConstantValue_\(i)], float(self.\(memberBindingNames[i]!))]))
+""")
+
                 typeLines.append("""
 let structTypeId_\(i) = \(floatDeclaration);
 """)
@@ -733,16 +749,21 @@ let structTypeId_\(i) = \(floatMatrixDeclaration(rows: 4, columns: 4));
 """)
                 break
             default:
+                writeConstantLines.append("""
+let structConstantValue_\(i) = self.\(memberBindingNames[i]!).writeSpirvCompositeConstant()
+""")
                 typeLines.append("""
 guard let structTypeId_\(i) = SpirvTypeCache.instance.tryGetTypeId(structName: "\(memberBindingTypes[i]!.text)") else {
     fatalError("Trying to use a type before it is declared")
 }
 """)
-                fatalError("\(memberBindingTypes[i]?.text ?? "Unknown") is not a supportedType")
             }
         }
         return [try! ExtensionDeclSyntax("""
 extension \(structDecl.name) : SpirvStructDecl {
+    struct Pointer {
+        let id: UInt32
+    }
     public static func register() -> UInt32 {
         if let structId = SpirvTypeCache.instance.tryGetTypeId(structName: "\(raw: structName)") {
             return structId
@@ -754,6 +775,48 @@ extension \(structDecl.name) : SpirvStructDecl {
         HeaderlessSpirvDocument.instance.addDebugNamesInstruction(instruction: Instruction(opCode: SpvOpName, operands: [[newStructId], [\(raw: structNameBytes.map({"\($0)"}).joined(separator: ", "))]]))
         \(raw: layoutLines.joined(separator: "\n"))
         return newStructId
+    }
+
+    public static func registerPointerType(storageClass: SpvStorageClass) -> (UInt32, () -> UInt32) {
+        guard let structId = SpirvTypeCache.instance.tryGetTypeId(structName: "\(raw: structName)") else {
+            fatalError("Using type before it is declared")
+        }
+        if let pointerTypeId = SpirvTypeCache.instance.tryGetTypeId(op: SpvOpTypePointer, operands: [[storageClass.rawValue, structId]]) {
+            return (pointerTypeId, {
+                let id = #id
+                if (storageClass == SpvStorageClassFunction) {
+                    #functionDeclaration(opCode: SpvOpVariable, [pointerTypeId, id, storageClass.rawValue])
+                } else {
+                    #globalDeclaration(opCode: SpvOpVariable, [pointerTypeId, id, storageClass.rawValue])
+                }
+                return id
+            })
+        }
+        let newPointerTypeId = SpirvTypeCache.instance.allocateNewTypeId(op: SpvOpTypePointer, operands: [[storageClass.rawValue, structId]])
+        let pointerInstruction = Instruction(opCode: SpvOpTypePointer, operands: [[newPointerTypeId, storageClass.rawValue, structId]])
+        HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: pointerInstruction)
+
+        return (newPointerTypeId, {
+            let id = #id
+            if (storageClass == SpvStorageClassFunction) {
+                #functionDeclaration(opCode: SpvOpVariable, [newPointerTypeId, id, storageClass.rawValue])
+            } else {
+                #globalDeclaration(opCode: SpvOpVariable, [newPointerTypeId, id, storageClass.rawValue])
+            }
+            return id
+        })
+    }
+
+    public func writeSpirvCompositeConstant() -> UInt32 {
+        guard let structId = SpirvTypeCache.instance.tryGetTypeId(structName: "\(raw: structName)") else {
+            fatalError("Using type before it is declared")
+        }
+        let id = #id
+        \(raw: typeLines.joined(separator: "\n"))
+        \(raw: writeConstantLines.joined(separator: "\n"))
+        let constantCompositeInstruction = Instruction(opCode: SpvOpConstantComposite, operands: [[structId, id], [\(raw: writeConstantOperands.joined(separator: ",  "))]])
+        HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: constantCompositeInstruction)
+        return id
     }
 }
 """)]
@@ -843,7 +906,7 @@ return """
     \(raw: functionDefinition)
     return { \(raw: trailingClosureAttributes.count == 0 ? "": "\(trailingClosureAttributes.joined(separator: ", ")) in")
         let result = SpirvIdAllocator.instance.allocate()
-        HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: Instruction(opCode: SpvOpFunctionCall, operands: [[\(resultTypeVariable), result], [\(raw: trailingClosureAttributes.joined(separator: ", "))]]))
+        HeaderlessSpirvDocument.instance.addFunctionDefinitionInstruction(instruction: Instruction(opCode: SpvOpFunctionCall, operands: [[\(resultTypeVariable), result, funcId], [\(raw: trailingClosureAttributes.joined(separator: ", "))]]))
         return result
     }
 }())

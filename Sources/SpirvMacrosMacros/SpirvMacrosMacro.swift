@@ -5,6 +5,7 @@ import SwiftSyntaxMacros
 import Foundation
 import SpirvMacrosShared
 import simd
+import MacroToolkit
 
 public struct SpirvDocumentMacro: ExpressionMacro {
     public static func expansion(
@@ -603,32 +604,13 @@ func floatMatrixDeclaration(rows: UInt32, columns: UInt32) -> String {
 }
 
 
-public struct SpirvStructMacro: ExpressionMacro {
-    public static func expansion(
-        of node: some FreestandingMacroExpansionSyntax,
-        in context: some MacroExpansionContext
-    ) -> ExprSyntax {
-        
-        guard let fst = node.argumentList.first else {
-            fatalError("SpirvStructMacro requires a closure containing a struct definition")
+
+
+public struct SpirvStructMacro: ExtensionMacro {
+    public static func expansion(of node: AttributeSyntax, attachedTo declaration: some DeclGroupSyntax, providingExtensionsOf type: some TypeSyntaxProtocol, conformingTo protocols: [TypeSyntax], in context: some MacroExpansionContext) throws -> [ExtensionDeclSyntax] {
+        guard let structDecl = declaration.as(StructDeclSyntax.self) else {
+            fatalError("Requires a struct declaration")
         }
-        
-        guard let closureExpr = fst.expression.as(ClosureExprSyntax.self) else {
-            fatalError("SpirvStructMacro requires a closure containing a struct definition")
-        }
-        
-        let structDecls = closureExpr.statements
-            .filter({$0.is(CodeBlockItemSyntax.self)})
-            .map({$0.item})
-            .map({$0.as(StructDeclSyntax.self)})
-            .filter({$0 != nil})
-            .map({$0!})
-            
-        if structDecls.count != 1 {
-            fatalError("SpirvStructMacro requires a closure containing a single struct definition")
-        }
-        
-        let structDecl = structDecls.first!
         let structName = structDecl.name.text
         let structNameBytes = string(structName)
         
@@ -641,11 +623,11 @@ public struct SpirvStructMacro: ExpressionMacro {
             .filter({$0 != nil})
         
         let memberBindingNames =
-            patternBindings
-                .map({$0!.pattern.as(IdentifierPatternSyntax.self)})
-                .map({$0?.identifier.text})
+        patternBindings
+            .map({$0!.pattern.as(IdentifierPatternSyntax.self)})
+            .map({$0?.identifier.text})
         let memberBindingTypes =
-            patternBindings
+        patternBindings
             .map({$0!.typeAnnotation?.type.as(IdentifierTypeSyntax.self)?.name})
             .filter({$0 != nil})
         let memberBindingSpecifierTypes = members.map({$0.bindingSpecifier.tokenKind == .keyword(.var) ? Keyword.var : Keyword.let})
@@ -694,19 +676,19 @@ let structTypeId_\(i) = \(vectorFloatDeclaration(componentCount: 3));
                 typeLines.append("""
 let structTypeId_\(i) = \(vectorFloatDeclaration(componentCount: 4));
 """)
-
+                
             case "vector_float8":
                 typeLines.append("""
 let structTypeId_\(i) = \(vectorFloatDeclaration(componentCount: 8));
 """)
                 break
-
+                
             case "matrix_float2x2":
                 typeLines.append("""
 let structTypeId_\(i) = \(floatMatrixDeclaration(rows: 2, columns: 2));
 """)
                 break
-
+                
             case "matrix_float2x4":
                 typeLines.append("""
 let structTypeId_\(i) = \(floatMatrixDeclaration(rows: 2, columns: 4));
@@ -739,7 +721,7 @@ let structTypeId_\(i) = \(floatMatrixDeclaration(rows: 3, columns: 4));
 let structTypeId_\(i) = \(floatMatrixDeclaration(rows: 4, columns: 2));
 """)
                 break
-
+                
             case "matrix_float4x3":
                 typeLines.append("""
 let structTypeId_\(i) = \(floatMatrixDeclaration(rows: 4, columns: 3));
@@ -753,27 +735,112 @@ let structTypeId_\(i) = \(floatMatrixDeclaration(rows: 4, columns: 4));
             default:
                 fatalError("\(memberBindingTypes[i]?.text ?? "Unknown") is not a supportedType")
             }
-        }        
-        return """
-({
-    if let structId = SpirvTypeCache.instance.tryGetTypeId(structName: "\(raw: structName)") {
-        return structId
+        }
+        return [try! ExtensionDeclSyntax("""
+extension \(structDecl.name) : SpirvStructDecl {
+    public static func register() -> UInt32 {
+        if let structId = SpirvTypeCache.instance.tryGetTypeId(structName: "\(raw: structName)") {
+            return structId
+        }
+        \(raw: typeLines.joined(separator: "\n"))
+        let newStructId = SpirvTypeCache.instance.allocateNewTypeId(structName: "\(raw: structName)")
+        let structInstruction = Instruction(opCode: SpvOpTypeStruct, operands: [[newStructId], [\(raw: structOperands.joined(separator: ", "))]])
+        HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: structInstruction)
+        HeaderlessSpirvDocument.instance.addDebugNamesInstruction(instruction: Instruction(opCode: SpvOpName, operands: [[newStructId], [\(raw: structNameBytes.map({"\($0)"}).joined(separator: ", "))]]))
+        \(raw: layoutLines.joined(separator: "\n"))
+        return newStructId
     }
-    \(raw: typeLines.joined(separator: "\n"))
-    let newStructId = SpirvTypeCache.instance.allocateNewTypeId(structName: "\(raw: structName)")
-    let structInstruction = Instruction(opCode: SpvOpTypeStruct, operands: [[newStructId], [\(raw: structOperands.joined(separator: ", "))]])
-    HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: structInstruction)
-    HeaderlessSpirvDocument.instance.addDebugNamesInstruction(instruction: Instruction(opCode: SpvOpName, operands: [[newStructId], [\(raw: structNameBytes.map({"\($0)"}).joined(separator: ", "))]]))
-    \(raw: layoutLines.joined(separator: "\n"))
-    return newStructId
-}())
-"""
+}
+""")]
     }
 }
 
 
-
-
+public struct SpirvFuncMacro: ExpressionMacro {
+    public static func expansion(
+        of node: some FreestandingMacroExpansionSyntax,
+        in context: some MacroExpansionContext
+    ) throws -> ExprSyntax {
+        let args = node.argumentList
+        
+        var name: ExprSyntax? = nil
+        if let fst = args.first, fst.label?.text == "name" {
+            let literalBytes = string(MacroToolkit.StringLiteral(fst.expression)?.value ?? "")
+            name = "HeaderlessSpirvDocument.instance.addDebugNamesInstruction(instruction: Instruction(opCode: SpvOpName, operands: [[funcId], [\(raw: literalBytes.map({"\($0)"}).joined(separator: ", "))]]))"
+        }
+        
+        var maybeVoid: String? = nil
+        var resultTypeVariable: ExprSyntax = "typeVoid"
+        if let resultType = args.first(where: { $0.label?.text == "returnType"}) {
+            resultTypeVariable = resultType.expression
+        } else {
+            maybeVoid = "let typeVoid = \(typeDeclaration(op: "SpvOpTypeVoid", operands: [[]]))"
+        }
+        
+        let argTypes = args.filter({$0.label?.text.starts(with: "argType") ?? false})
+        var funcParams = ""
+        var funcArgs: [String] = []
+        var i = 0
+        for arg in argTypes {
+            funcParams.append("""
+let paramId\(i) = SpirvIdAllocator.instance.allocate()
+HeaderlessSpirvDocument.instance.addFunctionDefinitionInstruction(instruction: Instruction(opCode: SpvOpFunctionParameter, operands: [[\(arg.expression), paramId\(i)]]))
+""")
+            funcArgs.append("paramId\(i)")
+            i += 1
+            
+        }
+        
+        guard let trailingClosure = node.trailingClosure else {
+            throw MacroError("Requires a trailing closure containing the function body")
+        }
+        let trailingClosureAttributes = (trailingClosure.signature?.parameterClause?.as(ClosureShorthandParameterListSyntax.self)?
+            .filter({$0.is(ClosureShorthandParameterSyntax.self)})
+            .map({$0.as(ClosureShorthandParameterSyntax.self)!.name.text}))
+        ?? []
+        
+        i = 0
+        var funcArgNames = ""
+        for attribute in trailingClosureAttributes {
+            let literalBytes = string(attribute)
+            funcArgNames.append("HeaderlessSpirvDocument.instance.addDebugNamesInstruction(instruction: Instruction(opCode: SpvOpName, operands: [[paramId\(i)], [\(literalBytes.map({"\($0)"}).joined(separator: ", "))]]))")
+            i+=1
+        }
+        
+        
+        let functionDefinition = """
+HeaderlessSpirvDocument.instance.addFunctionDefinitionInstruction(instruction: Instruction(opCode: SpvOpFunction, operands: [[\(resultTypeVariable), funcId, 0x0, funcTypeId]]))
+\(funcParams)
+\(funcArgNames)
+let functionLabelId = SpirvIdAllocator.instance.allocate()
+HeaderlessSpirvDocument.instance.addFunctionDefinitionInstruction(instruction: Instruction(opCode: SpvOpLabel, operands: [[functionLabelId]]))
+(\(trailingClosure)(\(funcArgs.joined(separator: ", "))))
+HeaderlessSpirvDocument.instance.addFunctionDefinitionInstruction(instruction: Instruction(opCode: SpvOpFunctionEnd, operands: []))
+"""
+        
+        
+        
+return """
+({
+    let funcId = SpirvIdAllocator.instance.allocate()
+    \(raw: maybeVoid ?? "")
+    let funcTypeId =  ({
+            let maybeResultId = SpirvTypeCache.instance.tryGetTypeId(op: SpvOpTypeFunction, operands: [[\(resultTypeVariable)], [\(raw: argTypes.map({"\($0.expression)"}).joined(separator: ", "))]])
+            if let id = maybeResultId {
+                return id
+            }
+            let resultId = SpirvTypeCache.instance.allocateNewTypeId(op: SpvOpTypeFunction, operands: [[\(resultTypeVariable)], [ \(raw: argTypes.map({"\($0.expression)"}).joined(separator: ", "))]])
+            let instruction = Instruction(opCode: SpvOpTypeFunction, operands: [[resultId, \(resultTypeVariable)], [\(raw: argTypes.map({"\($0.expression)"}).joined(separator: ", "))]])
+            HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: instruction)
+            return resultId
+    }())
+    \(name ?? "")
+    \(raw: functionDefinition)
+    return funcId
+}())
+"""
+    }
+}
 
 
 
@@ -811,6 +878,7 @@ struct SpirvMacrosPlugin: CompilerPlugin {
         SpirvFunctionDeclarationResultMacro.self,
         SpirvFunctionDefinitionMacro.self,
         SpirvFunctionDefinitionResultMacro.self,
-        SpirvStructMacro.self
+        SpirvStructMacro.self,
+        SpirvFuncMacro.self
     ]
 }

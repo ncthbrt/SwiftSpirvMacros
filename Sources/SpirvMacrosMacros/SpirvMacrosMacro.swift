@@ -733,6 +733,11 @@ let structTypeId_\(i) = \(floatMatrixDeclaration(rows: 4, columns: 4));
 """)
                 break
             default:
+                typeLines.append("""
+guard let structTypeId_\(i) = SpirvTypeCache.instance.tryGetTypeId(structName: "\(memberBindingTypes[i]!.text)") else {
+    fatalError("Trying to use a type before it is declared")
+}
+""")
                 fatalError("\(memberBindingTypes[i]?.text ?? "Unknown") is not a supportedType")
             }
         }

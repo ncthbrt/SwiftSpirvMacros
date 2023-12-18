@@ -4,6 +4,10 @@ import SPIRV_Headers_Swift
 import simd
 
 @SpirvStruct
+struct Cat {
+    var b: Float
+}
+@SpirvStruct
 struct Frog {
     var a: Int32
 }
@@ -12,13 +16,14 @@ struct Frog {
 let result: [UInt32] = #document({
     #capability(opCode: SpvOpCapability, [SpvCapabilityShader.rawValue])
     #memoryModel(opCode: SpvOpMemoryModel, [SpvAddressingModelLogical.rawValue, SpvMemoryModelGLSL450.rawValue])
-    let typeVoid = #typeDeclaration(opCode: SpvOpTypeVoid)
-  
-    let structTypeId = Frog.register()
-    let _ = #fn(name: "Frog",  argType1: structTypeId) { frog in
+
+    let catStructTypeId = Cat.register()
+    let frogStructTypeId = Frog.register()
+    let _ = #fn(name: "Frog",  argType1: frogStructTypeId) { frog in
         #functionDefinition(opCode: SpvOpReturn, [])
     }
-    
+    let typeVoid = #typeDeclaration(opCode: SpvOpTypeVoid)
+
     
     // Entry Point
     let entryPoint = #id

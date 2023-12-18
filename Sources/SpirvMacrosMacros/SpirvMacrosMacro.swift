@@ -916,6 +916,48 @@ return """
 
 
 
+public struct SpirvIfElseMacro: ExpressionMacro {
+    public static func expansion(
+        of node: some FreestandingMacroExpansionSyntax,
+        in context: some MacroExpansionContext
+    ) throws -> ExprSyntax {
+    
+        if (node.argumentList.count == 3){
+            return """
+({
+    let trueLabel = #id
+    let falseLabel = #id
+    let endLabel = #id
+    #functionDefinition(opCode: SpvOpSelectionMerge, [endLabel, 0])
+    #functionDefinition(opCode: SpvOpBranchConditional, [\(node.argumentList.first!.expression), trueLabel, falseLabel])
+    #functionDefinition(opCode: SpvOpLabel, [trueLabel])
+    (\(node.argumentList.dropFirst().first!.expression)())
+    #functionDefinition(opCode: SpvOpBranch, [endLabel])
+    #functionDefinition(opCode: SpvOpLabel, [falseLabel])
+    (\(node.argumentList.last!.expression)())
+    #functionDefinition(opCode: SpvOpBranch, [endLabel])
+    #functionDefinition(opCode: SpvOpLabel, [endLabel])
+}())
+"""
+        } else if (node.argumentList.count == 2) {
+            return """
+({
+    let trueLabel = #id
+    let endLabel = #id
+    #functionDefinition(opCode: SpvOpSelectionMerge, [endLabel, 0])
+    #functionDefinition(opCode: SpvOpBranchConditional, [\(node.argumentList.first!.expression), trueLabel, endLabel])
+    #functionDefinition(opCode: SpvOpLabel, [trueLabel])
+    (\(node.argumentList.dropFirst().first!.expression)())
+    #functionDefinition(opCode: SpvOpBranch, [endLabel])
+    #functionDefinition(opCode: SpvOpLabel, [endLabel])
+}())
+"""
+        } else {
+            fatalError("Unexpected format of if else block")
+        }
+        
+    }
+}
 
 @main
 struct SpirvMacrosPlugin: CompilerPlugin {
@@ -951,6 +993,7 @@ struct SpirvMacrosPlugin: CompilerPlugin {
         SpirvFunctionDefinitionMacro.self,
         SpirvFunctionDefinitionResultMacro.self,
         SpirvStructMacro.self,
-        SpirvFuncMacro.self
+        SpirvFuncMacro.self,
+        SpirvIfElseMacro.self
     ]
 }

@@ -150,3 +150,9 @@ public macro fn(name: String? = nil, _ argType1: UInt32, _ argType2: UInt32, arg
 @freestanding(expression)
 public macro fn(name: String? = nil, _ argType1: UInt32, _ argType2: UInt32, argType3: UInt32, argType4: UInt32, argType5: UInt32, argType6: UInt32, returnType: UInt32? = nil, _ funcDefinition: (UInt32, UInt32, UInt32, UInt32, UInt32, UInt32) -> Void) -> ((UInt32, UInt32, UInt32, UInt32, UInt32, UInt32) -> UInt32) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvFuncMacro")
 
+
+@freestanding(expression)
+public macro iff(_ cond: UInt32, _ ifTrue: () -> Void , els: () -> Void) -> Void = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvIfElseMacro")
+
+@freestanding(expression)
+public macro iff(_ cond: UInt32, _ ifTrue: () -> Void) -> Void = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvIfElseMacro")

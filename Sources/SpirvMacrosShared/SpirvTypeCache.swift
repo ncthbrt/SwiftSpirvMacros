@@ -15,7 +15,7 @@ public class SpirvTypeCache {
     private var structCache: [String: UInt32] = [:]
     public init() {}
     
-    public func tryGetTypeId(op: SpvOp, operands: [[UInt32]]) -> UInt32? {
+    public func tryGetTypeId(op: SpirvOp, operands: [[UInt32]]) -> UInt32? {
         var cacheKey = [op.rawValue]
         cacheKey.append(contentsOf: operands.flatMap({$0}))
         return typeCache[cacheKey]
@@ -25,7 +25,7 @@ public class SpirvTypeCache {
         return structCache[structName]
     }
     
-    public func allocateNewTypeId(op: SpvOp, operands: [[UInt32]]) -> UInt32 {
+    public func allocateNewTypeId(op: SpirvOp, operands: [[UInt32]]) -> UInt32 {
         var cacheKey = [op.rawValue]
         cacheKey.append(contentsOf: operands.flatMap({$0}))
         let id = SpirvIdAllocator.instance.allocate()

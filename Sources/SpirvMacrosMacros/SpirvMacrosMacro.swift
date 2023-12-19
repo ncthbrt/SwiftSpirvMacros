@@ -362,9 +362,9 @@ func typeDeclaration(op: String, operands: [[UInt32]]) -> String {
     """
 }
 
-let int32Declaration = typeDeclaration(op: "SpvOpTypeInt", operands: [[32], [1]])
-let uInt32Declaration = typeDeclaration(op: "SpvOpTypeInt", operands: [[32], [0]])
-let floatDeclaration = typeDeclaration(op: "SpvOpTypeFloat", operands: [[32]])
+let int32Declaration = typeDeclaration(op: "SpirvOpTypeInt", operands: [[32], [1]])
+let uInt32Declaration = typeDeclaration(op: "SpirvOpTypeInt", operands: [[32], [0]])
+let floatDeclaration = typeDeclaration(op: "SpirvOpTypeFloat", operands: [[32]])
 
 
 
@@ -372,12 +372,12 @@ func vectorFloatDeclaration(componentCount: UInt32) -> String {
     """
 ({
     let floatTypeId = \(floatDeclaration);
-    let maybeResultId = SpirvTypeCache.instance.tryGetTypeId(op: SpvOpTypeVector, operands: [[floatTypeId], [\(componentCount)]])
+    let maybeResultId = SpirvTypeCache.instance.tryGetTypeId(op: SpirvOpTypeVector, operands: [[floatTypeId], [\(componentCount)]])
     if let id = maybeResultId {
         return id
     }
-    let resultId = SpirvTypeCache.instance.allocateNewTypeId(op: SpvOpTypeVector, operands: [[floatTypeId], [\(componentCount)]])
-    let instruction = Instruction(opCode: SpvOpTypeVector, operands: [[resultId], [floatTypeId], [\(componentCount)]])
+    let resultId = SpirvTypeCache.instance.allocateNewTypeId(op: SpirvOpTypeVector, operands: [[floatTypeId], [\(componentCount)]])
+    let instruction = Instruction(opCode: SpirvOpTypeVector, operands: [[resultId], [floatTypeId], [\(componentCount)]])
     HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: instruction)
     return resultId
 }())
@@ -389,12 +389,12 @@ func floatMatrixDeclaration(rows: UInt32, columns: UInt32) -> String {
     """
 ({
     let vectorTypeId = \(vectorFloatDeclaration(componentCount: rows));
-    let maybeResultId = SpirvTypeCache.instance.tryGetTypeId(op: SpvOpTypeMatrix, operands: [[vectorTypeId, \(columns)]])
+    let maybeResultId = SpirvTypeCache.instance.tryGetTypeId(op: SpirvOpTypeMatrix, operands: [[vectorTypeId, \(columns)]])
     if let id = maybeResultId {
         return id
     }
-    let resultId = SpirvTypeCache.instance.allocateNewTypeId(op: SpvOpTypeMatrix, operands: [[vectorTypeId, \(columns)]])
-    let instruction = Instruction(opCode: SpvOpTypeMatrix, operands: [[resultId, vectorTypeId, \(columns)]])
+    let resultId = SpirvTypeCache.instance.allocateNewTypeId(op: SpirvOpTypeMatrix, operands: [[vectorTypeId, \(columns)]])
+    let instruction = Instruction(opCode: SpirvOpTypeMatrix, operands: [[resultId, vectorTypeId, \(columns)]])
     HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: instruction)
     return resultId
 }())
@@ -441,7 +441,7 @@ public struct SpirvStructMacro: ExtensionMacro {
         var writeConstantOperands: [String] = []
         for i in 0..<memberBindingNames.count {
             layoutLines.append("""
-HeaderlessSpirvDocument.instance.addDebugNamesInstruction(instruction: Instruction(opCode: SpvOpMemberName, operands: [[newStructId, \(i)], [\(string(memberBindingNames[i]!).map({"\($0)"}).joined(separator: ", "))]]))
+HeaderlessSpirvDocument.instance.addDebugNamesInstruction(instruction: Instruction(opCode: SpirvOpMemberName, operands: [[newStructId, \(i)], [\(string(memberBindingNames[i]!).map({"\($0)"}).joined(separator: ", "))]]))
 """)
             structOperands.append("structTypeId_\(i)")
             writeConstantOperands.append("structConstantValue_\(i)")
@@ -452,7 +452,7 @@ let structTypeId_\(i) = \(int32Declaration);
 """)
                 writeConstantLines.append("""
 let structConstantValue_\(i) = #id
-HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: Instruction(opCode: SpvOpConstant, operands: [[structTypeId_\(i), structConstantValue_\(i)], int(self.\(memberBindingNames[i]!))]))
+HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: Instruction(opCode: SpirvOpConstant, operands: [[structTypeId_\(i), structConstantValue_\(i)], int(self.\(memberBindingNames[i]!))]))
 """)
                 break
             case "UInt32":
@@ -462,14 +462,14 @@ let structTypeId_\(i) = \(uInt32Declaration);
                 
                 writeConstantLines.append("""
 let structConstantValue_\(i) = #id
-HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: Instruction(opCode: SpvOpConstant, operands: [[structTypeId_\(i), structConstantValue_\(i), self.\(memberBindingNames[i]!)]]))
+HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: Instruction(opCode: SpirvOpConstant, operands: [[structTypeId_\(i), structConstantValue_\(i), self.\(memberBindingNames[i]!)]]))
 """)
 
                 break
             case "Float":
                 writeConstantLines.append("""
 let structConstantValue_\(i) = #id
-HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: Instruction(opCode: SpvOpConstant, operands: [[structTypeId_\(i), structConstantValue_\(i)], float(self.\(memberBindingNames[i]!))]))
+HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: Instruction(opCode: SpirvOpConstant, operands: [[structTypeId_\(i), structConstantValue_\(i)], float(self.\(memberBindingNames[i]!))]))
 """)
 
                 typeLines.append("""
@@ -565,38 +565,38 @@ extension \(structDecl.name) : SpirvStructDecl {
         }
         \(raw: typeLines.joined(separator: "\n"))
         let newStructId = SpirvTypeCache.instance.allocateNewTypeId(structName: "\(raw: structName)")
-        let structInstruction = Instruction(opCode: SpvOpTypeStruct, operands: [[newStructId], [\(raw: structOperands.joined(separator: ", "))]])
+        let structInstruction = Instruction(opCode: SpirvOpTypeStruct, operands: [[newStructId], [\(raw: structOperands.joined(separator: ", "))]])
         HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: structInstruction)
-        HeaderlessSpirvDocument.instance.addDebugNamesInstruction(instruction: Instruction(opCode: SpvOpName, operands: [[newStructId], [\(raw: structNameBytes.map({"\($0)"}).joined(separator: ", "))]]))
+        HeaderlessSpirvDocument.instance.addDebugNamesInstruction(instruction: Instruction(opCode: SpirvOpName, operands: [[newStructId], [\(raw: structNameBytes.map({"\($0)"}).joined(separator: ", "))]]))
         \(raw: layoutLines.joined(separator: "\n"))
         return newStructId
     }
 
-    public static func registerPointerType(storageClass: SpvStorageClass) -> (UInt32, () -> UInt32) {
+    public static func registerPointerType(storageClass: SpirvStorageClass) -> (UInt32, () -> UInt32) {
         guard let structId = SpirvTypeCache.instance.tryGetTypeId(structName: "\(raw: structName)") else {
             fatalError("Using type before it is declared")
         }
-        if let pointerTypeId = SpirvTypeCache.instance.tryGetTypeId(op: SpvOpTypePointer, operands: [[storageClass.rawValue, structId]]) {
+        if let pointerTypeId = SpirvTypeCache.instance.tryGetTypeId(op: SpirvOpTypePointer, operands: [[storageClass.rawValue, structId]]) {
             return (pointerTypeId, {
                 let id = #id
-                if (storageClass == SpvStorageClassFunction) {
-                    #functionHead(opCode: SpvOpVariable, [pointerTypeId, id, storageClass.rawValue])
+                if (storageClass == SpirvStorageClassFunction) {
+                    #functionHead(opCode: SpirvOpVariable, [pointerTypeId, id, storageClass.rawValue])
                 } else {
-                    #globalDeclaration(opCode: SpvOpVariable, [pointerTypeId, id, storageClass.rawValue])
+                    #globalDeclaration(opCode: SpirvOpVariable, [pointerTypeId, id, storageClass.rawValue])
                 }
                 return id
             })
         }
-        let newPointerTypeId = SpirvTypeCache.instance.allocateNewTypeId(op: SpvOpTypePointer, operands: [[storageClass.rawValue, structId]])
-        let pointerInstruction = Instruction(opCode: SpvOpTypePointer, operands: [[newPointerTypeId, storageClass.rawValue, structId]])
+        let newPointerTypeId = SpirvTypeCache.instance.allocateNewTypeId(op: SpirvOpTypePointer, operands: [[storageClass.rawValue, structId]])
+        let pointerInstruction = Instruction(opCode: SpirvOpTypePointer, operands: [[newPointerTypeId, storageClass.rawValue, structId]])
         HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: pointerInstruction)
 
         return (newPointerTypeId, {
             let id = #id
-            if (storageClass == SpvStorageClassFunction) {
-                #functionHead(opCode: SpvOpVariable, [newPointerTypeId, id, storageClass.rawValue])
+            if (storageClass == SpirvStorageClassFunction) {
+                #functionHead(opCode: SpirvOpVariable, [newPointerTypeId, id, storageClass.rawValue])
             } else {
-                #globalDeclaration(opCode: SpvOpVariable, [newPointerTypeId, id, storageClass.rawValue])
+                #globalDeclaration(opCode: SpirvOpVariable, [newPointerTypeId, id, storageClass.rawValue])
             }
             return id
         })
@@ -609,7 +609,7 @@ extension \(structDecl.name) : SpirvStructDecl {
         let id = #id
         \(raw: typeLines.joined(separator: "\n"))
         \(raw: writeConstantLines.joined(separator: "\n"))
-        let constantCompositeInstruction = Instruction(opCode: SpvOpConstantComposite, operands: [[structId, id], [\(raw: writeConstantOperands.joined(separator: ",  "))]])
+        let constantCompositeInstruction = Instruction(opCode: SpirvOpConstantComposite, operands: [[structId, id], [\(raw: writeConstantOperands.joined(separator: ",  "))]])
         HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: constantCompositeInstruction)
         return id
     }
@@ -629,7 +629,7 @@ public struct SpirvFuncMacro: ExpressionMacro {
         var name: ExprSyntax? = nil
         if let fst = args.first, fst.label?.text == "name" {
             let literalBytes = string(MacroToolkit.StringLiteral(fst.expression)?.value ?? "")
-            name = "HeaderlessSpirvDocument.instance.addDebugNamesInstruction(instruction: Instruction(opCode: SpvOpName, operands: [[funcId], [\(raw: literalBytes.map({"\($0)"}).joined(separator: ", "))]]))"
+            name = "HeaderlessSpirvDocument.instance.addDebugNamesInstruction(instruction: Instruction(opCode: SpirvOpName, operands: [[funcId], [\(raw: literalBytes.map({"\($0)"}).joined(separator: ", "))]]))"
         }
         
         var maybeVoid: String? = nil
@@ -637,7 +637,7 @@ public struct SpirvFuncMacro: ExpressionMacro {
         if let resultType = args.first(where: { $0.label?.text == "returnType"}) {
             resultTypeVariable = resultType.expression
         } else {
-            maybeVoid = "let typeVoid = \(typeDeclaration(op: "SpvOpTypeVoid", operands: [[]]))"
+            maybeVoid = "let typeVoid = \(typeDeclaration(op: "SpirvOpTypeVoid", operands: [[]]))"
         }
         
         let argTypes = args.filter({$0.label?.text.starts(with: "argType") ?? false})
@@ -647,7 +647,7 @@ public struct SpirvFuncMacro: ExpressionMacro {
         for arg in argTypes {
             funcParams.append("""
 let paramId\(i) = SpirvIdAllocator.instance.allocate()
-#functionHead(opCode: SpvOpFunctionParameter, [\(arg.expression), paramId\(i)])
+#functionHead(opCode: SpirvOpFunctionParameter, [\(arg.expression), paramId\(i)])
 """)
             funcArgs.append("paramId\(i)")
             i += 1
@@ -666,19 +666,19 @@ let paramId\(i) = SpirvIdAllocator.instance.allocate()
         var funcArgNames = ""
         for attribute in trailingClosureAttributes {
             let literalBytes = string(attribute)
-            funcArgNames.append("HeaderlessSpirvDocument.instance.addDebugNamesInstruction(instruction: Instruction(opCode: SpvOpName, operands: [[paramId\(i)], [\(literalBytes.map({"\($0)"}).joined(separator: ", "))]]))")
+            funcArgNames.append("HeaderlessSpirvDocument.instance.addDebugNamesInstruction(instruction: Instruction(opCode: SpirvOpName, operands: [[paramId\(i)], [\(literalBytes.map({"\($0)"}).joined(separator: ", "))]]))")
             i+=1
         }
         
         
         let functionDefinition = """
-SpirvFunction.instance.addInstructionAtHead(Instruction(opCode: SpvOpFunction, operands: [[\(resultTypeVariable), funcId, 0x0, funcTypeId]]))
+SpirvFunction.instance.addInstructionAtHead(Instruction(opCode: SpirvOpFunction, operands: [[\(resultTypeVariable), funcId, 0x0, funcTypeId]]))
 \(funcParams)
 \(funcArgNames)
 let functionLabelId = SpirvIdAllocator.instance.allocate()
-#functionHead(opCode: SpvOpLabel, [functionLabelId])
+#functionHead(opCode: SpirvOpLabel, [functionLabelId])
 (\(trailingClosure)(\(funcArgs.joined(separator: ", "))))
-#functionBody(opCode: SpvOpFunctionEnd)
+#functionBody(opCode: SpirvOpFunctionEnd)
 SpirvFunction.instance.writeFunction()
 """
         
@@ -689,12 +689,12 @@ return """
     let funcId = SpirvIdAllocator.instance.allocate()
     \(raw: maybeVoid ?? "")
     let funcTypeId =  ({
-            let maybeResultId = SpirvTypeCache.instance.tryGetTypeId(op: SpvOpTypeFunction, operands: [[\(resultTypeVariable)], [\(raw: argTypes.map({"\($0.expression)"}).joined(separator: ", "))]])
+            let maybeResultId = SpirvTypeCache.instance.tryGetTypeId(op: SpirvOpTypeFunction, operands: [[\(resultTypeVariable)], [\(raw: argTypes.map({"\($0.expression)"}).joined(separator: ", "))]])
             if let id = maybeResultId {
                 return id
             }
-            let resultId = SpirvTypeCache.instance.allocateNewTypeId(op: SpvOpTypeFunction, operands: [[\(resultTypeVariable)], [ \(raw: argTypes.map({"\($0.expression)"}).joined(separator: ", "))]])
-            let instruction = Instruction(opCode: SpvOpTypeFunction, operands: [[resultId, \(resultTypeVariable)], [\(raw: argTypes.map({"\($0.expression)"}).joined(separator: ", "))]])
+            let resultId = SpirvTypeCache.instance.allocateNewTypeId(op: SpirvOpTypeFunction, operands: [[\(resultTypeVariable)], [ \(raw: argTypes.map({"\($0.expression)"}).joined(separator: ", "))]])
+            let instruction = Instruction(opCode: SpirvOpTypeFunction, operands: [[resultId, \(resultTypeVariable)], [\(raw: argTypes.map({"\($0.expression)"}).joined(separator: ", "))]])
             HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: instruction)
             return resultId
     }())
@@ -702,7 +702,7 @@ return """
     \(raw: functionDefinition)
     return { \(raw: trailingClosureAttributes.count == 0 ? "": "\(trailingClosureAttributes.joined(separator: ", ")) in")
         let result = SpirvIdAllocator.instance.allocate()
-        #functionBody(opCode: SpvOpFunctionCall, [\(resultTypeVariable), result, funcId], [\(raw: trailingClosureAttributes.joined(separator: ", "))])
+        #functionBody(opCode: SpirvOpFunctionCall, [\(resultTypeVariable), result, funcId], [\(raw: trailingClosureAttributes.joined(separator: ", "))])
         return result
     }
 }())
@@ -724,15 +724,15 @@ public struct SpirvIfElseMacro: ExpressionMacro {
     let trueLabel = #id
     let falseLabel = #id
     let endLabel = #id
-    #functionBody(opCode: SpvOpSelectionMerge, [endLabel, 0])
-    #functionBody(opCode: SpvOpBranchConditional, [\(node.argumentList.first!.expression), trueLabel, falseLabel])
-    #functionBody(opCode: SpvOpLabel, [trueLabel])
+    #functionBody(opCode: SpirvOpSelectionMerge, [endLabel, 0])
+    #functionBody(opCode: SpirvOpBranchConditional, [\(node.argumentList.first!.expression), trueLabel, falseLabel])
+    #functionBody(opCode: SpirvOpLabel, [trueLabel])
     (\(node.trailingClosure!)())
-    #functionBody(opCode: SpvOpBranch, [endLabel])
-    #functionBody(opCode: SpvOpLabel, [falseLabel])
+    #functionBody(opCode: SpirvOpBranch, [endLabel])
+    #functionBody(opCode: SpirvOpLabel, [falseLabel])
     (\(node.additionalTrailingClosures.first!.closure)())
-    #functionBody(opCode: SpvOpBranch, [endLabel])
-    #functionBody(opCode: SpvOpLabel, [endLabel])
+    #functionBody(opCode: SpirvOpBranch, [endLabel])
+    #functionBody(opCode: SpirvOpLabel, [endLabel])
 }())
 """
         } else {
@@ -740,12 +740,12 @@ public struct SpirvIfElseMacro: ExpressionMacro {
 ({
     let trueLabel = #id
     let endLabel = #id
-    #functionBody(opCode: SpvOpSelectionMerge, [endLabel, 0])
-    #functionBody(opCode: SpvOpBranchConditional, [\(node.argumentList.first!.expression), trueLabel, endLabel])
-    #functionBody(opCode: SpvOpLabel, [trueLabel])
+    #functionBody(opCode: SpirvOpSelectionMerge, [endLabel, 0])
+    #functionBody(opCode: SpirvOpBranchConditional, [\(node.argumentList.first!.expression), trueLabel, endLabel])
+    #functionBody(opCode: SpirvOpLabel, [trueLabel])
     (\(node.trailingClosure!)())
-    #functionBody(opCode: SpvOpBranch, [endLabel])
-    #functionBody(opCode: SpvOpLabel, [endLabel])
+    #functionBody(opCode: SpirvOpBranch, [endLabel])
+    #functionBody(opCode: SpirvOpLabel, [endLabel])
 }())
 """
         }
@@ -766,40 +766,40 @@ public struct SpirvForMacro: ExpressionMacro {
             return """
 ({
     let int32TypeId = \(raw: int32Declaration)
-    let boolTypeId = #typeDeclaration(opCode: SpvOpTypeBool)
-    let int32FunctionPointerTypeId = #typeDeclaration(opCode: SpvOpTypePointer, [SpvStorageClassFunction.rawValue, int32TypeId])
+    let boolTypeId = #typeDeclaration(opCode: SpirvOpTypeBool)
+    let int32FunctionPointerTypeId = #typeDeclaration(opCode: SpirvOpTypePointer, [SpirvStorageClassFunction.rawValue, int32TypeId])
     let loopBranchId = #id
     let loopStartId = #id
     let loopBranchEndId = #id
     let loopBranchContinueId = #id
     let loopSentinelId = #id
     let endConstantId = #id
-    #globalDeclaration(opCode: SpvOpConstant, [int32TypeId, endConstantId], int(\(length.expression)))
+    #globalDeclaration(opCode: SpirvOpConstant, [int32TypeId, endConstantId], int(\(length.expression)))
     let one = #id
-    #globalDeclaration(opCode: SpvOpConstant, [int32TypeId, one, 0x1])
-    #functionHead(opCode: SpvOpVariable, [int32FunctionPointerTypeId, loopSentinelId, SpvStorageClassFunction.rawValue])
-    #functionBody(opCode: SpvOpBranch, [loopStartId])
-    #functionBody(opCode: SpvOpLabel, [loopStartId])
-    #functionBody(opCode: SpvOpLoopMerge, [loopBranchEndId, loopBranchContinueId, 0x0])
-    #functionBody(opCode: SpvOpBranch, [loopBranchId])
-    #functionBody(opCode: SpvOpLabel, [loopBranchId])
+    #globalDeclaration(opCode: SpirvOpConstant, [int32TypeId, one, 0x1])
+    #functionHead(opCode: SpirvOpVariable, [int32FunctionPointerTypeId, loopSentinelId, SpirvStorageClassFunction.rawValue])
+    #functionBody(opCode: SpirvOpBranch, [loopStartId])
+    #functionBody(opCode: SpirvOpLabel, [loopStartId])
+    #functionBody(opCode: SpirvOpLoopMerge, [loopBranchEndId, loopBranchContinueId, 0x0])
+    #functionBody(opCode: SpirvOpBranch, [loopBranchId])
+    #functionBody(opCode: SpirvOpLabel, [loopBranchId])
     let iInLoopBody = #id
-    #functionBody(opCode: SpvOpLoad, [int32TypeId, iInLoopBody, loopSentinelId])
+    #functionBody(opCode: SpirvOpLoad, [int32TypeId, iInLoopBody, loopSentinelId])
     let shouldExitId = #id
-    #functionBody(opCode: SpvOpSLessThan, [boolTypeId, shouldExitId, iInLoopBody, endConstantId])
+    #functionBody(opCode: SpirvOpSLessThan, [boolTypeId, shouldExitId, iInLoopBody, endConstantId])
     let loopBodyId = #id
-    #functionBody(opCode: SpvOpBranchConditional, [shouldExitId, loopBodyId, loopBranchEndId])
-    #functionBody(opCode: SpvOpLabel, [loopBodyId])
+    #functionBody(opCode: SpirvOpBranchConditional, [shouldExitId, loopBodyId, loopBranchEndId])
+    #functionBody(opCode: SpirvOpLabel, [loopBodyId])
     (\(node.trailingClosure!)(iInLoopBody))
-    #functionBody(opCode: SpvOpBranch, [loopBranchContinueId])
-    #functionBody(opCode: SpvOpLabel, [loopBranchContinueId])
+    #functionBody(opCode: SpirvOpBranch, [loopBranchContinueId])
+    #functionBody(opCode: SpirvOpLabel, [loopBranchContinueId])
     let prevIInSentinelSection = #id
-    #functionBody(opCode: SpvOpLoad, [int32TypeId, prevIInSentinelSection, loopSentinelId])
+    #functionBody(opCode: SpirvOpLoad, [int32TypeId, prevIInSentinelSection, loopSentinelId])
     let nextIInSentinelSection = #id
-    #functionBody(opCode: SpvOpIAdd, [int32TypeId, nextIInSentinelSection, prevIInSentinelSection, one])
-    #functionBody(opCode: SpvOpStore, [loopSentinelId, nextIInSentinelSection])
-    #functionBody(opCode: SpvOpBranch, [loopStartId])
-    #functionBody(opCode: SpvOpLabel, [loopBranchEndId])
+    #functionBody(opCode: SpirvOpIAdd, [int32TypeId, nextIInSentinelSection, prevIInSentinelSection, one])
+    #functionBody(opCode: SpirvOpStore, [loopSentinelId, nextIInSentinelSection])
+    #functionBody(opCode: SpirvOpBranch, [loopStartId])
+    #functionBody(opCode: SpirvOpLabel, [loopBranchEndId])
 }())
 """
     }

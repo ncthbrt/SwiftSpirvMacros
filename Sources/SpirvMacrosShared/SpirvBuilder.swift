@@ -13,7 +13,7 @@ fileprivate let generatorMagicNumber: UInt32 = 0x0
 
 fileprivate func buildHeader(bounds: UInt32) -> [UInt32] {
     return [
-        SpvMagicNumber,
+        SpirvMagicNumber,
         UInt32(SPV_VERSION),
         generatorMagicNumber,
         bounds,
@@ -22,10 +22,10 @@ fileprivate func buildHeader(bounds: UInt32) -> [UInt32] {
 }
 
 public struct Instruction {
-    public let opCode: SpvOp
+    public let opCode: SpirvOp
     public var operands: [UInt32]
     
-    public init(opCode: SpvOp, operands: [[UInt32]] = []) {
+    public init(opCode: SpirvOp, operands: [[UInt32]] = []) {
         self.opCode = opCode
         self.operands = operands.flatMap({$0})
     }

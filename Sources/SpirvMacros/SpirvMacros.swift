@@ -12,63 +12,63 @@ public macro stringLiteral(_ value: String) -> [UInt32] = #externalMacro(module:
 
 
 @freestanding(expression)
-public macro capability(opCode: SpvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvCapabilityMacro")
+public macro capability(opCode: SpirvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvCapabilityMacro")
 
 
 @freestanding(expression)
-public macro ext(opCode: SpvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvExtensionMacro")
+public macro ext(opCode: SpirvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvExtensionMacro")
 
 
 @freestanding(expression)
-public macro extInstImport(opCode: SpvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvExtInstImportMacro")
+public macro extInstImport(opCode: SpirvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvExtInstImportMacro")
 
 
 @freestanding(expression)
-public macro memoryModel(opCode: SpvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvMemoryModelMacro")
+public macro memoryModel(opCode: SpirvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvMemoryModelMacro")
 
 @freestanding(expression)
-public macro entryPoint(opCode: SpvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvEntryPointMacro")
-
-
-@freestanding(expression)
-public macro executionMode(opCode: SpvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvExecutionModeMacro")
+public macro entryPoint(opCode: SpirvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvEntryPointMacro")
 
 
 @freestanding(expression)
-public macro debugSource(opCode: SpvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvDebugSourceMacro")
+public macro executionMode(opCode: SpirvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvExecutionModeMacro")
 
 
 @freestanding(expression)
-public macro debugNames(opCode: SpvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvDebugNamesMacro")
+public macro debugSource(opCode: SpirvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvDebugSourceMacro")
 
 
 @freestanding(expression)
-public macro debugModulesProcessed(opCode: SpvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvDebugModuleProcessedMacro")
+public macro debugNames(opCode: SpirvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvDebugNamesMacro")
 
 
 @freestanding(expression)
-public macro annotation(opCode: SpvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvAnnotationMacro")
+public macro debugModulesProcessed(opCode: SpirvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvDebugModuleProcessedMacro")
 
 
 @freestanding(expression)
-public macro globalDeclaration(opCode: SpvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvGlobalDeclarationMacro")
-
+public macro annotation(opCode: SpirvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvAnnotationMacro")
 
 
 @freestanding(expression)
-public macro typeDeclaration(opCode: SpvOp, _ operands: [UInt32]...) -> UInt32 = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvTypeDeclarationMacro")
+public macro globalDeclaration(opCode: SpirvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvGlobalDeclarationMacro")
 
 
 
 @freestanding(expression)
-public macro functionDeclaration(opCode: SpvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvFunctionDeclarationMacro")
+public macro typeDeclaration(opCode: SpirvOp, _ operands: [UInt32]...) -> UInt32 = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvTypeDeclarationMacro")
+
+
 
 @freestanding(expression)
-public macro functionHead(opCode: SpvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvFunctionHeadMacro")
+public macro functionDeclaration(opCode: SpirvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvFunctionDeclarationMacro")
+
+@freestanding(expression)
+public macro functionHead(opCode: SpirvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvFunctionHeadMacro")
 
 
 @freestanding(expression)
-public macro functionBody(opCode: SpvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvFunctionBodyMacro")
+public macro functionBody(opCode: SpirvOp, _ operands: [UInt32]...) = #externalMacro(module: "SpirvMacrosMacros", type: "SpirvFunctionBodyMacro")
 
 
 @attached(extension, names: arbitrary, conformances: SpirvStructDecl)

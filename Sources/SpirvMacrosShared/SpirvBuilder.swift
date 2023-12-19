@@ -44,6 +44,34 @@ public struct Instruction {
     }
 }
 
+public class SpirvFunction {
+    private var head: [Instruction] = []
+    private var instructions: [Instruction] = []
+    
+    public func addInstructionAtHead(_ instruction:Instruction) {
+        head.append(instruction)
+    }
+    
+    public func addInstructionAtBody(_ instruction:Instruction) {
+        instructions.append(instruction)
+    }
+    
+    
+    public func writeFunction() {
+        for h in head {
+            HeaderlessSpirvDocument.instance.addFunctionDefinitionInstruction(instruction: h)
+        }
+        
+        for i in instructions {
+            HeaderlessSpirvDocument.instance.addFunctionDefinitionInstruction(instruction: i)
+        }
+        head.removeAll()
+        instructions.removeAll()
+    }
+    
+    public static var instance: SpirvFunction = SpirvFunction()
+
+}
 
 public class HeaderlessSpirvDocument {
     private var capabilities : [UInt32] = []

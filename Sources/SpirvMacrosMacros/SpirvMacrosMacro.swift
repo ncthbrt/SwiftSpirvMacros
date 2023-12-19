@@ -106,22 +106,6 @@ public struct SpirvCapabilityMacro: ExpressionMacro {
     }
 }
 
-public struct SpirvCapabilityResultMacro: ExpressionMacro {
-    public static func expansion(
-        of node: some FreestandingMacroExpansionSyntax,
-        in context: some MacroExpansionContext
-    ) -> ExprSyntax {
-        let arguments = node.argumentList.map({return "\($0.expression)"})
-        return """
-({
-    let resultId = SpirvIdAllocator.instance.allocate()
-    let instruction = Instruction(opCode: \(raw: arguments.first!), operands: [[resultId], \(raw: arguments.dropFirst().joined(separator: ", "))])
-    HeaderlessSpirvDocument.instance.addCapabilityInstruction(instruction: instruction)
-    return resultId
-}())
-"""
-    }
-}
 
 public struct SpirvExtensionMacro: ExpressionMacro {
     public static func expansion(
@@ -139,23 +123,6 @@ public struct SpirvExtensionMacro: ExpressionMacro {
     }
 }
 
-public struct SpirvExtensionResultMacro: ExpressionMacro {
-    public static func expansion(
-        of node: some FreestandingMacroExpansionSyntax,
-        in context: some MacroExpansionContext
-    ) -> ExprSyntax {
-        let arguments = node.argumentList.map({return "\($0.expression)"})
-        return """
-({
-    let resultId = SpirvIdAllocator.instance.allocate()
-    let instruction = Instruction(opCode: \(raw: arguments.first!), operands: [[resultId], \(raw: arguments.dropFirst().joined(separator: ", "))])
-    HeaderlessSpirvDocument.instance.addExtensionInstruction(instruction: instruction)
-    return resultId
-}())
-"""
-    }
-}
-
 public struct SpirvExtInstImportMacro: ExpressionMacro {
     public static func expansion(
         of node: some FreestandingMacroExpansionSyntax,
@@ -167,23 +134,6 @@ public struct SpirvExtInstImportMacro: ExpressionMacro {
 ({
     let instruction = Instruction(opCode: \(raw: arguments.first!), operands: [\(raw: arguments.dropFirst().joined(separator: ", "))])
     HeaderlessSpirvDocument.instance.addExtInstImportInstruction(instruction: instruction)
-}())
-"""
-    }
-}
-
-public struct SpirvExtInstImportResultMacro: ExpressionMacro {
-    public static func expansion(
-        of node: some FreestandingMacroExpansionSyntax,
-        in context: some MacroExpansionContext
-    ) -> ExprSyntax {
-        let arguments = node.argumentList.map({return "\($0.expression)"})
-        return """
-({
-    let resultId = SpirvIdAllocator.instance.allocate()
-    let instruction = Instruction(opCode: \(raw: arguments.first!), operands: [[resultId], \(raw: arguments.dropFirst().joined(separator: ", "))])
-    HeaderlessSpirvDocument.instance.addExtInstImportInstruction(instruction: instruction)
-    return resultId
 }())
 """
     }
@@ -206,22 +156,6 @@ public struct SpirvMemoryModelMacro: ExpressionMacro {
     }
 }
 
-public struct SpirvMemoryModelMacroResultMacro: ExpressionMacro {
-    public static func expansion(
-        of node: some FreestandingMacroExpansionSyntax,
-        in context: some MacroExpansionContext
-    ) -> ExprSyntax {
-        let arguments = node.argumentList.map({return "\($0.expression)"})
-        return """
-({
-    let resultId = SpirvIdAllocator.instance.allocate()
-    let instruction = Instruction(opCode: \(raw: arguments.first!), operands: [[resultId], \(raw: arguments.dropFirst().joined(separator: ", "))])
-    HeaderlessSpirvDocument.instance.addMemoryModelInstruction(instruction: instruction)
-    return resultId
-}())
-"""
-    }
-}
 
 public struct SpirvEntryPointMacro: ExpressionMacro {
     public static func expansion(
@@ -234,23 +168,6 @@ public struct SpirvEntryPointMacro: ExpressionMacro {
 ({
     let instruction = Instruction(opCode: \(raw: arguments.first!), operands: [\(raw: arguments.dropFirst().joined(separator: ", "))])
     HeaderlessSpirvDocument.instance.addMemoryModelInstruction(instruction: instruction)
-}())
-"""
-    }
-}
-
-public struct SpirvEntryPointResultMacro: ExpressionMacro {
-    public static func expansion(
-        of node: some FreestandingMacroExpansionSyntax,
-        in context: some MacroExpansionContext
-    ) -> ExprSyntax {
-        let arguments = node.argumentList.map({return "\($0.expression)"})
-        return """
-({
-    let resultId = SpirvIdAllocator.instance.allocate()
-    let instruction = Instruction(opCode: \(raw: arguments.first!), operands: [[resultId], \(raw: arguments.dropFirst().joined(separator: ", "))])
-    HeaderlessSpirvDocument.instance.addMemoryModelInstruction(instruction: instruction)
-    return resultId
 }())
 """
     }
@@ -273,22 +190,6 @@ public struct SpirvExecutionModeMacro: ExpressionMacro {
     }
 }
 
-public struct SpirvExecutionModeResultMacro: ExpressionMacro {
-    public static func expansion(
-        of node: some FreestandingMacroExpansionSyntax,
-        in context: some MacroExpansionContext
-    ) -> ExprSyntax {
-        let arguments = node.argumentList.map({return "\($0.expression)"})
-        return """
-({
-    let resultId = SpirvIdAllocator.instance.allocate()
-    let instruction = Instruction(opCode: \(raw: arguments.first!), operands: [[resultId], \(raw: arguments.dropFirst().joined(separator: ", "))])
-    HeaderlessSpirvDocument.instance.addExecutionModeInstruction(instruction: instruction)
-    return resultId
-}())
-"""
-    }
-}
 
 
 public struct SpirvDebugSourceMacro: ExpressionMacro {
@@ -307,24 +208,6 @@ public struct SpirvDebugSourceMacro: ExpressionMacro {
     }
 }
 
-public struct SpirvDebugSourceResultMacro: ExpressionMacro {
-    public static func expansion(
-        of node: some FreestandingMacroExpansionSyntax,
-        in context: some MacroExpansionContext
-    ) -> ExprSyntax {
-        let arguments = node.argumentList.map({return "\($0.expression)"})
-        return """
-({
-    let resultId = SpirvIdAllocator.instance.allocate()
-    let instruction = Instruction(opCode: \(raw: arguments.first!), operands: [[resultId], \(raw: arguments.dropFirst().joined(separator: ", "))])
-    HeaderlessSpirvDocument.instance.addDebugSourceInstruction(instruction: instruction)
-    return resultId
-}())
-"""
-    }
-}
-
-
 
 public struct SpirvDebugNamesMacro: ExpressionMacro {
     public static func expansion(
@@ -342,24 +225,6 @@ public struct SpirvDebugNamesMacro: ExpressionMacro {
     }
 }
 
-public struct SpirvDebugNamesResultMacro: ExpressionMacro {
-    public static func expansion(
-        of node: some FreestandingMacroExpansionSyntax,
-        in context: some MacroExpansionContext
-    ) -> ExprSyntax {
-        let arguments = node.argumentList.map({return "\($0.expression)"})
-        return """
-({
-    let resultId = SpirvIdAllocator.instance.allocate()
-    let instruction = Instruction(opCode: \(raw: arguments.first!), operands: [[resultId], \(raw: arguments.dropFirst().joined(separator: ", "))])
-    HeaderlessSpirvDocument.instance.addDebugNamesInstruction(instruction: instruction)
-    return resultId
-}())
-"""
-    }
-}
-
-
 public struct SpirvDebugModuleProcessedMacro: ExpressionMacro {
     public static func expansion(
         of node: some FreestandingMacroExpansionSyntax,
@@ -376,24 +241,6 @@ public struct SpirvDebugModuleProcessedMacro: ExpressionMacro {
     }
 }
 
-public struct SpirvDebugModuleProcessedResultMacro: ExpressionMacro {
-    public static func expansion(
-        of node: some FreestandingMacroExpansionSyntax,
-        in context: some MacroExpansionContext
-    ) -> ExprSyntax {
-        let arguments = node.argumentList.map({return "\($0.expression)"})
-        return """
-({
-    let resultId = SpirvIdAllocator.instance.allocate()
-    let instruction = Instruction(opCode: \(raw: arguments.first!), operands: [[resultId], \(raw: arguments.dropFirst().joined(separator: ", "))])
-    HeaderlessSpirvDocument.instance.addDebugModuleProcessedInstructions(instruction: instruction)
-    return resultId
-}())
-"""
-    }
-}
-
-
 public struct SpirvAnnotationMacro: ExpressionMacro {
     public static func expansion(
         of node: some FreestandingMacroExpansionSyntax,
@@ -405,23 +252,6 @@ public struct SpirvAnnotationMacro: ExpressionMacro {
 ({
     let instruction = Instruction(opCode: \(raw: arguments.first!), operands: [\(raw: arguments.dropFirst().joined(separator: ", "))])
     HeaderlessSpirvDocument.instance.addAnnotationInstruction(instruction: instruction)
-}())
-"""
-    }
-}
-
-public struct SpirvAnnotationResultMacro: ExpressionMacro {
-    public static func expansion(
-        of node: some FreestandingMacroExpansionSyntax,
-        in context: some MacroExpansionContext
-    ) -> ExprSyntax {
-        let arguments = node.argumentList.map({return "\($0.expression)"})
-        return """
-({
-    let resultId = SpirvIdAllocator.instance.allocate()
-    let instruction = Instruction(opCode: \(raw: arguments.first!), operands: [[resultId], \(raw: arguments.dropFirst().joined(separator: ", "))])
-    HeaderlessSpirvDocument.instance.addAnnotationInstruction(instruction: instruction)
-    return resultId
 }())
 """
     }
@@ -466,22 +296,6 @@ public struct SpirvTypeDeclarationMacro: ExpressionMacro {
     }
 }
 
-public struct SpirvGlobalDeclarationResultMacro: ExpressionMacro {
-    public static func expansion(
-        of node: some FreestandingMacroExpansionSyntax,
-        in context: some MacroExpansionContext
-    ) -> ExprSyntax {
-        let arguments = node.argumentList.map({return "\($0.expression)"})
-        return """
-({
-    let resultId = SpirvIdAllocator.instance.allocate()
-    let instruction = Instruction(opCode: \(raw: arguments.first!), operands: [[resultId], \(raw: arguments.dropFirst().joined(separator: ", "))])
-    HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: instruction)
-    return resultId
-}())
-"""
-    }
-}
 
 public struct SpirvFunctionDeclarationMacro: ExpressionMacro {
     public static func expansion(
@@ -499,25 +313,7 @@ public struct SpirvFunctionDeclarationMacro: ExpressionMacro {
     }
 }
 
-public struct SpirvFunctionDeclarationResultMacro: ExpressionMacro {
-    public static func expansion(
-        of node: some FreestandingMacroExpansionSyntax,
-        in context: some MacroExpansionContext
-    ) -> ExprSyntax {
-        let arguments = node.argumentList.map({return "\($0.expression)"})
-        return """
-({
-    let resultId = SpirvIdAllocator.instance.allocate()
-    let instruction = Instruction(opCode: \(raw: arguments.first!), operands: [[resultId], \(raw: arguments.dropFirst().joined(separator: ", "))])
-    HeaderlessSpirvDocument.instance.addFunctionDeclarationInstruction(instruction: instruction)
-    return resultId
-}())
-"""
-    }
-}
-
-
-public struct SpirvFunctionDefinitionMacro: ExpressionMacro {
+public struct SpirvFunctionBodyMacro: ExpressionMacro {
     public static func expansion(
         of node: some FreestandingMacroExpansionSyntax,
         in context: some MacroExpansionContext
@@ -527,24 +323,24 @@ public struct SpirvFunctionDefinitionMacro: ExpressionMacro {
         return """
 ({
     let instruction = Instruction(opCode: \(raw: arguments.first!), operands: [\(raw: arguments.dropFirst().joined(separator: ", "))])
-    HeaderlessSpirvDocument.instance.addFunctionDefinitionInstruction(instruction: instruction)
+        SpirvFunction.instance.addInstructionAtBody(instruction)
 }())
 """
     }
 }
 
-public struct SpirvFunctionDefinitionResultMacro: ExpressionMacro {
+
+public struct SpirvFunctionHeadMacro: ExpressionMacro {
     public static func expansion(
         of node: some FreestandingMacroExpansionSyntax,
         in context: some MacroExpansionContext
     ) -> ExprSyntax {
         let arguments = node.argumentList.map({return "\($0.expression)"})
+        
         return """
 ({
-    let resultId = SpirvIdAllocator.instance.allocate()
-    let instruction = Instruction(opCode: \(raw: arguments.first!), operands: [[resultId], \(raw: arguments.dropFirst().joined(separator: ", "))])
-    HeaderlessSpirvDocument.instance.addFunctionDefinitionInstruction(instruction: instruction)
-    return resultId
+    let instruction = Instruction(opCode: \(raw: arguments.first!), operands: [\(raw: arguments.dropFirst().joined(separator: ", "))])
+    SpirvFunction.instance.addInstructionAtHead(instruction)
 }())
 """
     }
@@ -569,6 +365,8 @@ func typeDeclaration(op: String, operands: [[UInt32]]) -> String {
 let int32Declaration = typeDeclaration(op: "SpvOpTypeInt", operands: [[32], [1]])
 let uInt32Declaration = typeDeclaration(op: "SpvOpTypeInt", operands: [[32], [0]])
 let floatDeclaration = typeDeclaration(op: "SpvOpTypeFloat", operands: [[32]])
+
+
 
 func vectorFloatDeclaration(componentCount: UInt32) -> String {
     """
@@ -761,9 +559,6 @@ guard let structTypeId_\(i) = SpirvTypeCache.instance.tryGetTypeId(structName: "
         }
         return [try! ExtensionDeclSyntax("""
 extension \(structDecl.name) : SpirvStructDecl {
-    struct Pointer {
-        let id: UInt32
-    }
     public static func register() -> UInt32 {
         if let structId = SpirvTypeCache.instance.tryGetTypeId(structName: "\(raw: structName)") {
             return structId
@@ -785,7 +580,7 @@ extension \(structDecl.name) : SpirvStructDecl {
             return (pointerTypeId, {
                 let id = #id
                 if (storageClass == SpvStorageClassFunction) {
-                    #functionDeclaration(opCode: SpvOpVariable, [pointerTypeId, id, storageClass.rawValue])
+                    #functionHead(opCode: SpvOpVariable, [pointerTypeId, id, storageClass.rawValue])
                 } else {
                     #globalDeclaration(opCode: SpvOpVariable, [pointerTypeId, id, storageClass.rawValue])
                 }
@@ -799,7 +594,7 @@ extension \(structDecl.name) : SpirvStructDecl {
         return (newPointerTypeId, {
             let id = #id
             if (storageClass == SpvStorageClassFunction) {
-                #functionDeclaration(opCode: SpvOpVariable, [newPointerTypeId, id, storageClass.rawValue])
+                #functionHead(opCode: SpvOpVariable, [newPointerTypeId, id, storageClass.rawValue])
             } else {
                 #globalDeclaration(opCode: SpvOpVariable, [newPointerTypeId, id, storageClass.rawValue])
             }
@@ -852,7 +647,7 @@ public struct SpirvFuncMacro: ExpressionMacro {
         for arg in argTypes {
             funcParams.append("""
 let paramId\(i) = SpirvIdAllocator.instance.allocate()
-HeaderlessSpirvDocument.instance.addFunctionDefinitionInstruction(instruction: Instruction(opCode: SpvOpFunctionParameter, operands: [[\(arg.expression), paramId\(i)]]))
+#functionHead(opCode: SpvOpFunctionParameter, [\(arg.expression), paramId\(i)])
 """)
             funcArgs.append("paramId\(i)")
             i += 1
@@ -877,13 +672,14 @@ HeaderlessSpirvDocument.instance.addFunctionDefinitionInstruction(instruction: I
         
         
         let functionDefinition = """
-HeaderlessSpirvDocument.instance.addFunctionDefinitionInstruction(instruction: Instruction(opCode: SpvOpFunction, operands: [[\(resultTypeVariable), funcId, 0x0, funcTypeId]]))
+SpirvFunction.instance.addInstructionAtHead(Instruction(opCode: SpvOpFunction, operands: [[\(resultTypeVariable), funcId, 0x0, funcTypeId]]))
 \(funcParams)
 \(funcArgNames)
 let functionLabelId = SpirvIdAllocator.instance.allocate()
-HeaderlessSpirvDocument.instance.addFunctionDefinitionInstruction(instruction: Instruction(opCode: SpvOpLabel, operands: [[functionLabelId]]))
+#functionHead(opCode: SpvOpLabel, [functionLabelId])
 (\(trailingClosure)(\(funcArgs.joined(separator: ", "))))
-HeaderlessSpirvDocument.instance.addFunctionDefinitionInstruction(instruction: Instruction(opCode: SpvOpFunctionEnd, operands: []))
+#functionBody(opCode: SpvOpFunctionEnd)
+SpirvFunction.instance.writeFunction()
 """
         
         
@@ -906,7 +702,7 @@ return """
     \(raw: functionDefinition)
     return { \(raw: trailingClosureAttributes.count == 0 ? "": "\(trailingClosureAttributes.joined(separator: ", ")) in")
         let result = SpirvIdAllocator.instance.allocate()
-        HeaderlessSpirvDocument.instance.addFunctionDefinitionInstruction(instruction: Instruction(opCode: SpvOpFunctionCall, operands: [[\(resultTypeVariable), result, funcId], [\(raw: trailingClosureAttributes.joined(separator: ", "))]]))
+        #functionBody(opCode: SpvOpFunctionCall, [\(resultTypeVariable), result, funcId], [\(raw: trailingClosureAttributes.joined(separator: ", "))])
         return result
     }
 }())
@@ -921,41 +717,91 @@ public struct SpirvIfElseMacro: ExpressionMacro {
         of node: some FreestandingMacroExpansionSyntax,
         in context: some MacroExpansionContext
     ) throws -> ExprSyntax {
-    
-        if (node.argumentList.count == 3){
+        
+        if (node.additionalTrailingClosures.count > 0){
             return """
 ({
     let trueLabel = #id
     let falseLabel = #id
     let endLabel = #id
-    #functionDefinition(opCode: SpvOpSelectionMerge, [endLabel, 0])
-    #functionDefinition(opCode: SpvOpBranchConditional, [\(node.argumentList.first!.expression), trueLabel, falseLabel])
-    #functionDefinition(opCode: SpvOpLabel, [trueLabel])
-    (\(node.argumentList.dropFirst().first!.expression)())
-    #functionDefinition(opCode: SpvOpBranch, [endLabel])
-    #functionDefinition(opCode: SpvOpLabel, [falseLabel])
-    (\(node.argumentList.last!.expression)())
-    #functionDefinition(opCode: SpvOpBranch, [endLabel])
-    #functionDefinition(opCode: SpvOpLabel, [endLabel])
+    #functionBody(opCode: SpvOpSelectionMerge, [endLabel, 0])
+    #functionBody(opCode: SpvOpBranchConditional, [\(node.argumentList.first!.expression), trueLabel, falseLabel])
+    #functionBody(opCode: SpvOpLabel, [trueLabel])
+    (\(node.trailingClosure!)())
+    #functionBody(opCode: SpvOpBranch, [endLabel])
+    #functionBody(opCode: SpvOpLabel, [falseLabel])
+    (\(node.additionalTrailingClosures.first!.closure)())
+    #functionBody(opCode: SpvOpBranch, [endLabel])
+    #functionBody(opCode: SpvOpLabel, [endLabel])
 }())
 """
-        } else if (node.argumentList.count == 2) {
+        } else {
             return """
 ({
     let trueLabel = #id
     let endLabel = #id
-    #functionDefinition(opCode: SpvOpSelectionMerge, [endLabel, 0])
-    #functionDefinition(opCode: SpvOpBranchConditional, [\(node.argumentList.first!.expression), trueLabel, endLabel])
-    #functionDefinition(opCode: SpvOpLabel, [trueLabel])
-    (\(node.argumentList.dropFirst().first!.expression)())
-    #functionDefinition(opCode: SpvOpBranch, [endLabel])
-    #functionDefinition(opCode: SpvOpLabel, [endLabel])
+    #functionBody(opCode: SpvOpSelectionMerge, [endLabel, 0])
+    #functionBody(opCode: SpvOpBranchConditional, [\(node.argumentList.first!.expression), trueLabel, endLabel])
+    #functionBody(opCode: SpvOpLabel, [trueLabel])
+    (\(node.trailingClosure!)())
+    #functionBody(opCode: SpvOpBranch, [endLabel])
+    #functionBody(opCode: SpvOpLabel, [endLabel])
 }())
 """
-        } else {
-            fatalError("Unexpected format of if else block")
+        }
+    }
+}
+
+
+
+public struct SpirvForMacro: ExpressionMacro {
+    public static func expansion(
+        of node: some FreestandingMacroExpansionSyntax,
+        in context: some MacroExpansionContext
+    ) throws -> ExprSyntax {
+        guard let length = node.argumentList.first else {
+            fatalError("Expected range to be provided in argument list")
         }
         
+            return """
+({
+    let int32TypeId = \(raw: int32Declaration)
+    let boolTypeId = #typeDeclaration(opCode: SpvOpTypeBool)
+    let int32FunctionPointerTypeId = #typeDeclaration(opCode: SpvOpTypePointer, [SpvStorageClassFunction.rawValue, int32TypeId])
+    let loopBranchId = #id
+    let loopStartId = #id
+    let loopBranchEndId = #id
+    let loopBranchContinueId = #id
+    let loopSentinelId = #id
+    let endConstantId = #id
+    #globalDeclaration(opCode: SpvOpConstant, [int32TypeId, endConstantId], int(\(length.expression)))
+    let one = #id
+    #globalDeclaration(opCode: SpvOpConstant, [int32TypeId, one, 0x1])
+    #functionHead(opCode: SpvOpVariable, [int32FunctionPointerTypeId, loopSentinelId, SpvStorageClassFunction.rawValue])
+    #functionBody(opCode: SpvOpBranch, [loopStartId])
+    #functionBody(opCode: SpvOpLabel, [loopStartId])
+    #functionBody(opCode: SpvOpLoopMerge, [loopBranchEndId, loopBranchContinueId, 0x0])
+    #functionBody(opCode: SpvOpBranch, [loopBranchId])
+    #functionBody(opCode: SpvOpLabel, [loopBranchId])
+    let iInLoopBody = #id
+    #functionBody(opCode: SpvOpLoad, [int32TypeId, iInLoopBody, loopSentinelId])
+    let shouldExitId = #id
+    #functionBody(opCode: SpvOpSLessThan, [boolTypeId, shouldExitId, iInLoopBody, endConstantId])
+    let loopBodyId = #id
+    #functionBody(opCode: SpvOpBranchConditional, [shouldExitId, loopBodyId, loopBranchEndId])
+    #functionBody(opCode: SpvOpLabel, [loopBodyId])
+    (\(node.trailingClosure!)(iInLoopBody))
+    #functionBody(opCode: SpvOpBranch, [loopBranchContinueId])
+    #functionBody(opCode: SpvOpLabel, [loopBranchContinueId])
+    let prevIInSentinelSection = #id
+    #functionBody(opCode: SpvOpLoad, [int32TypeId, prevIInSentinelSection, loopSentinelId])
+    let nextIInSentinelSection = #id
+    #functionBody(opCode: SpvOpIAdd, [int32TypeId, nextIInSentinelSection, prevIInSentinelSection, one])
+    #functionBody(opCode: SpvOpStore, [loopSentinelId, nextIInSentinelSection])
+    #functionBody(opCode: SpvOpBranch, [loopStartId])
+    #functionBody(opCode: SpvOpLabel, [loopBranchEndId])
+}())
+"""
     }
 }
 
@@ -966,34 +812,23 @@ struct SpirvMacrosPlugin: CompilerPlugin {
         SpirvIdMacro.self,
         SpirvStringLiteralMacro.self,
         SpirvCapabilityMacro.self,
-        SpirvCapabilityResultMacro.self,
         SpirvExtensionMacro.self,
-        SpirvExtensionResultMacro.self,
         SpirvExtInstImportMacro.self,
-        SpirvExtInstImportResultMacro.self,
         SpirvMemoryModelMacro.self,
-        SpirvMemoryModelMacroResultMacro.self,
         SpirvEntryPointMacro.self,
-        SpirvEntryPointResultMacro.self,
         SpirvExecutionModeMacro.self,
-        SpirvExecutionModeResultMacro.self,
         SpirvDebugSourceMacro.self,
-        SpirvDebugSourceResultMacro.self,
         SpirvDebugNamesMacro.self,
-        SpirvDebugNamesResultMacro.self,
         SpirvDebugModuleProcessedMacro.self,
-        SpirvDebugModuleProcessedResultMacro.self,
         SpirvAnnotationMacro.self,
-        SpirvAnnotationResultMacro.self,
         SpirvGlobalDeclarationMacro.self,
-        SpirvGlobalDeclarationResultMacro.self,
         SpirvTypeDeclarationMacro.self,
         SpirvFunctionDeclarationMacro.self,
-        SpirvFunctionDeclarationResultMacro.self,
-        SpirvFunctionDefinitionMacro.self,
-        SpirvFunctionDefinitionResultMacro.self,
         SpirvStructMacro.self,
         SpirvFuncMacro.self,
-        SpirvIfElseMacro.self
+        SpirvIfElseMacro.self,
+        SpirvForMacro.self,
+        SpirvFunctionBodyMacro.self,
+        SpirvFunctionHeadMacro.self,
     ]
 }

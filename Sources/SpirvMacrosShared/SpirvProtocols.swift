@@ -11,5 +11,5 @@ import SPIRV_Headers_Swift
 public protocol SpirvStructDecl {
     static func register() -> UInt32
     static func registerPointerType(storageClass: SpirvStorageClass) -> (UInt32, () -> UInt32)
-    func writeSpirvCompositeConstant() -> UInt32
+//    func writeSpirvCompositeConstant() -> UInt32
 }

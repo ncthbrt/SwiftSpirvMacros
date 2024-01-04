@@ -475,6 +475,7 @@ HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: In
                 typeLines.append("""
 let structTypeId_\(i) = \(floatDeclaration);
 """)
+                
                 break
             case "vector_float2":
                 typeLines.append("""
@@ -601,20 +602,20 @@ extension \(structDecl.name) : SpirvStructDecl {
             return id
         })
     }
-
-    public func writeSpirvCompositeConstant() -> UInt32 {
-        guard let structId = SpirvTypeCache.instance.tryGetTypeId(structName: "\(raw: structName)") else {
-            fatalError("Using type before it is declared")
-        }
-        let id = #id
-        \(raw: typeLines.joined(separator: "\n"))
-        \(raw: writeConstantLines.joined(separator: "\n"))
-        let constantCompositeInstruction = Instruction(opCode: SpirvOpConstantComposite, operands: [[structId, id], [\(raw: writeConstantOperands.joined(separator: ",  "))]])
-        HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: constantCompositeInstruction)
-        return id
-    }
 }
 """)]
+        
+//        public func writeSpirvCompositeConstant() -> UInt32 {
+//            guard let structId = SpirvTypeCache.instance.tryGetTypeId(structName: "\(raw: structName)") else {
+//                fatalError("Using type before it is declared")
+//            }
+//            let id = #id
+//            \(raw: typeLines.joined(separator: "\n"))
+//            \(raw: writeConstantLines.joined(separator: "\n"))
+//            let constantCompositeInstruction = Instruction(opCode: SpirvOpConstantComposite, operands: [[structId, id], [\(raw: writeConstantOperands.joined(separator: ",  "))]])
+//            HeaderlessSpirvDocument.instance.addGlobalDeclarationInstruction(instruction: constantCompositeInstruction)
+//            return id
+//        }
     }
 }
 
